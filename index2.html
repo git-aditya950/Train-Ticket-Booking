@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainTrack - Book Your Journey</title>
+    
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 3. All Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Create a subtle dot-grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: linear-gradient(to right, #9ca3af 1px, transparent 1px),
+                              linear-gradient(to bottom, #9ca3af 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Main content padding */
+        .page-content {
+            max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12;
+            width: 100%;
+        }
+
+        /* Hero section background image */
+        #hero-section {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('https://images.unsplash.com/photo-1570125904223-b6f525b49370?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Active nav link styling */
+        .nav-link.active {
+            border-color: #6366f1; /* indigo-500 */
+            color: #111827; /* gray-900 */
+        }
+        .nav-link:not(.active) {
+            border-color: transparent;
+            color: #4b5563; /* gray-600 */
+        }
+        .nav-link:not(.active):hover {
+            border-color: #d1d5db; /* gray-300 */
+            color: #111827; /* gray-900 */
+        }
+
+        /* Sidebar transitions */
+        #sidebar-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        #sidebar-menu.open {
+            transform: translateX(0);
+        }
+
+        /* Prose styles for Gemini content */
+        .prose {
+            color: #374151; /* gray-700 */
+        }
+        .prose h1, .prose h2, .prose h3 {
+            color: #111827; /* gray-900 */
+            font-weight: 600;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+        }
+        .prose li {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        .prose p {
+            line-height: 1.6;
+        }
+        .prose strong {
+            color: #111827; /* gray-900 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 h-full flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" id="logo-home-link" class="flex items-center">
+                        <svg class="h-8 w-auto text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                        </svg>
+                        <span class="ml-3 text-2xl font-bold text-gray-900">TrainTrack</span>
+                    </a>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="#" id="nav-search" class="nav-link border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        Search Trains
+                    </a>
+                </div>
+
+                <!-- Right-side Login/Register -->
+                <div class="flex items-center space-x-2">
+                    <!-- Auth buttons (Login/Register) - Show when logged out -->
+                    <div id="auth-buttons" class="">
+                        <button id="login-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition">
+                            Log In
+                        </button>
+                        <button id="register-btn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 transition">
+                            Register
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Badge/Button - Show when logged in -->
+                    <div id="profile-menu" class="hidden">
+                        <button id="profile-badge-btn" class="p-2 bg-white border border-gray-300 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 transition focus:outline-none">
+                            <span class="sr-only">Open user menu</span>
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        <!-- ======================= -->
+        <!--   1. Search Trains Page   -->
+        <!-- ======================= -->
+        <div id="page-search" class="page-content">
+            
+            <!-- Hero Section with Search Form -->
+            <div id="hero-section" class="relative bg-gray-900 py-20 sm:py-32 rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+                            Find Your Next Journey
+                        </h1>
+                        <p class="mt-6 text-lg leading-8 text-gray-200">
+                            Book tickets instantly from thousands of stations across India.
+                        </p>
+                    </div>
+
+                    <!-- Search Form (now on hero) -->
+                    <form id="search-form" class="mt-12 bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                        <div>
+                            <label for="from-station" class="block text-sm font-medium text-gray-900">From</label>
+                            <input type="text" id="from-station" list="station-list" placeholder="e.g., New Delhi (NDLS)" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="to-station" class="block text-sm font-medium text-gray-900">To</label>
+                            <input type="text" id="to-station" list="station-list" placeholder="e.g., Mumbai (CST)" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="journey-date" class="block text-sm font-medium text-gray-900">Date of Journey</label>
+                            <input type="date" id="journey-date" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" class="w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition h-[50px]">
+                                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Fallback image -->
+                <img src="https://images.unsplash.com/photo-1570125904223-b6f525b49370?q=80&w=2070&auto=format&fit=crop" class="hidden" alt="Train image" 
+                     onerror="this.onerror=null; document.getElementById('hero-section').style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://placehold.co/1920x1080/334155/e2e8f0?text=Welcome+to+TrainTrack)'">
+            </div>
+
+            <!-- Features Section -->
+            <section id="features-section" class="py-16 sm:py-24">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                            Travel Made Simple
+                        </h2>
+                        <p class="mt-4 text-lg text-gray-600">
+                            Everything you need for a seamless booking experience.
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <!-- Feature 1: Instant Booking -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">Instant Booking</h3>
+                            <p class="mt-2 text-gray-600">Book your tickets in just a few clicks. No waiting, no hassle. Your seat is confirmed instantly.</p>
+                        </div>
+                        <!-- Feature 2: Secure Payments -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751A11.953 11.953 0 0 0 12 2.724l-.387.012Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">Secure Payments</h3>
+                            <p class="mt-2 text-gray-600">Your transactions are secured with industry-standard encryption. Book with peace of mind.</p>
+                        </div>
+                        <!-- Feature 3: AI Trip Planner -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.47-2.47L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.47-2.47L18 2.25l.259 1.036a3.375 3.375 0 0 0 2.47 2.47L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.47 2.47Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">AI Trip Planner</h3>
+                            <p class="mt-2 text-gray-600">Use our Gemini-powered AI to get inspiration and plan itineraries for your destination.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Gemini API Inspiration Card -->
+            <div id="gemini-inspiration-card" class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 mt-0">
+                <div class="flex items-center">
+                        <span class="text-4xl mr-4">✨</span>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Need Some Inspiration?</h2>
+                            <p class="text-gray-600">Describe your ideal trip, and let AI suggest destinations.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="inspiration-prompt" placeholder="e.g., 'a quiet mountain getaway' or 'historical sites'" class="flex-grow block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button id="get-inspiration-btn" class="w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition h-[50px]">
+                            Suggest Destinations
+                        </button>
+                    </div>
+                    <div id="inspiration-results" class="mt-6"></div>
+                </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   NEW: Search Results Page -->
+        <!-- ======================= -->
+        <div id="page-search-results" class="page-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Available Trains</h1>
+                <button id="results-back-btn" class="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition">
+                    &larr; Back to Search
+                </button>
+            </div>
+            
+            <!-- Search Results Area -->
+            <div id="search-results" class="">
+                <div id="search-results-container">
+                    <!-- Train cards will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   2. My Bookings Page   -->
+        <!-- ======================= -->
+        <div id="page-bookings" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">My Bookings</h1>
+                <div id="bookings-container" class="space-y-6">
+                    <div id="no-bookings-message" class="text-center text-gray-500 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p>You have no upcoming or past bookings.</p>
+                        <p class="mt-2 text-sm">Tickets you book will appear here.</p>
+                    </div>
+                    <!-- Real bookings will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   3. Profile Page       -->
+        <!-- ======================= -->
+        <div id="page-profile" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">My Profile</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Edit Profile Form -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Account Information</h2>
+                        <form id="profile-form" class="space-y-6">
+                            <div>
+                                <label for="profile-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" id="profile-name" value="Demo User" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="profile-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                <input type="email" id="profile-email" value="demo@user.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" readonly>
+                            </div>
+                            <div>
+                                <label for="profile-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <input type="tel" id="profile-phone" value="+91 98765 43210" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="profile-password" class="block text-sm font-medium text-gray-700">New Password</Tabel>
+                                <input type="password" id="profile-password" placeholder="Enter a new password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                                Update Profile
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Booking History Preview -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking History</h2>
+                        <div id="profile-bookings-preview" class="text-center text-gray-500 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                            <p>This will show a preview of recent bookings.</p>
+                            <a href="#" id="profile-view-bookings" class="mt-2 text-sm font-medium text-indigo-600 hover:underline">View all bookings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   4. Passenger Details Page   -->
+        <!-- ================================== -->
+        <div id="page-passenger-details" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Passenger Details</h1>
+                <div id="passenger-journey-summary" class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8"></div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Passengers</h2>
+                    <div id="passenger-list-container" class="space-y-3"></div>
+                </div>
+                <form id="add-passenger-form" class="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
+                    <h3 class="font-medium text-gray-900">Add New Passenger</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="passenger-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="passenger-name" placeholder="e.g., John Doe" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="passenger-age" class="block text-sm font-medium text-gray-700">Age</label>
+                            <input type="number" id="passenger-age" placeholder="e.g., 25" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="passenger-gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select id="passenger-gender" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="passenger-berth" class="block text-sm font-medium text-gray-700">Berth Preference</label>
+                            <select id="passenger-berth" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                <option value="No Choice">No Choice</option>
+                                <option value="Lower">Lower</option>
+                                <option value="Middle">Middle</option>
+                                <option value="Upper">Upper</option>
+                                <option value="Side Lower">Side Lower</option>
+                                <option value="Side Upper">Side Upper</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full md:w-auto px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700">
+                        Add Passenger
+                    </button>
+                </form>
+                <div class="mt-8 flex justify-between">
+                    <button id="passenger-back-btn" class="px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Back to Results</button>
+                    <button id="passenger-proceed-btn" class="px-6 py-3 text-base font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition" disabled>
+                        Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   5. Payment Page           -->
+        <!-- ================================== -->
+        <div id="page-payment" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 max-w-2xl mx-auto">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Complete Your Payment</h1>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking Summary</h2>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-3">
+                        <div id="payment-journey-summary"></div>
+                        <div id="payment-passenger-summary"></div>
+                        <div class="border-t border-gray-300 pt-3">
+                            <div class="flex justify-between items-center text-lg font-bold text-gray-900">
+                                <span>Total Fare:</span>
+                                <span id="payment-total-fare">₹ 2,450.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="payment-form" class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Payment Method (Simulated)</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="card-number" class="block text-sm font-medium text-gray-700">Card Number</label>
+                            <input type="text" id="card-number" value="4242 4242 4242 4242" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="card-expiry" class="block text-sm font-medium text-gray-700">Expiry (MM/YY)</label>
+                                <input type="text" id="card-expiry" value="12/28" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="card-cvc" class="block text-sm font-medium text-gray-700">CVC</label>
+                                <input type="text" id="card-cvc" value="123" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center items-center px-6 py-4 text-base font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 transition">
+                        Pay Now (Simulated)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   6. Confirmation Page      -->
+        <!-- ================================== -->
+        <div id="page-confirmation" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 max-w-2xl mx-auto text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <svg class="w-10 h-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mt-6 mb-4">Booking Confirmed!</h1>
+                <p class="text-lg text-gray-600 mb-6">Your ticket has been successfully booked.</p>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-left mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-600">PNR Number:</span>
+                        <span id="confirmation-pnr" class="text-xl font-bold text-indigo-700">654-3219870</span>
+                    </div>
+                    <div id="confirmation-journey-summary" class="mb-4"></div>
+                    <div id="confirmation-passenger-summary"></div>
+                </div>
+                <button id="confirmation-home-btn" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                    Book Another Ticket
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-auto border-t border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm text-gray-500">&copy; 2025 TrainTrack. All rights reserved. A C++ OOP Project.</p>
+        </div>
+    </footer>
+
+    <!-- Station Datalist (All HTML) -->
+    <datalist id="station-list">
+        <option value="New Delhi (NDLS)">
+        <option value="Mumbai (CST)">
+        <option value="Kolkata (HWH)">
+        <option value="Chennai (MAS)">
+        <option value="Bangalore (SBC)">
+        <option value="Hyderabad (SC)">
+        <option value="Pune (PUNE)">
+        <option value="Ahmedabad (ADI)">
+        <option value="Jaipur (JP)">
+        <option value="Lucknow (LKO)">
+        <option value="Bhopal (BPL)">
+        <option value="Indore (INDB)">
+        <option value="Patna (PNBE)">
+        <option value="Ranchi (RNC)">
+        <option value="Bhubaneswar (BBS)">
+        <option value="Guwahati (GHY)">
+        <option value="Thiruvananthapuram (TVC)">
+        <option value="Kochi (ERN)">
+        <option value="Goa (MAO)">
+        <option value="Nagpur (NGP)">
+        <option value="Visakhapatnam (VSKP)">
+        <option value="Amritsar (ASR)">
+        <option value="Chandigarh (CDG)">
+        <option value="Shimla (SML)">
+        <option value="Dehradun (DDN)">
+        <option value="Haridwar (HW)">
+        <option value="Varanasi (BSB)">
+        <option value="Agra (AGC)">
+        <option value="Udaipur (UDZ)">
+        <option value="Jodhpur (JU)">
+        <option value="Mysore (MYS)">
+        <option value="Coimbatore (CBE)">
+        <option value="Madurai (MDU)">
+        <option value="Puri (PURI)">
+        <option value="Jammu (JAT)">
+        <option value="Srinagar (SINA)">
+        <option value="New Jalpaiguri (NJP)">
+        <option value="Siliguri (SGUJ)">
+        <option value="Tirupati (TPTY)">
+        <option value."Kanyakumari (CAPE)">
+        <option value="Rameswaram (RMM)">
+        <option value="Aurangabad (AWB)">
+        <option value="Nashik (NK)">
+        <option value="Vadodara (BRC)">
+        <option value="Surat (ST)">
+        <option value="Rajkot (RJT)">
+        <option value="Kanpur (CNB)">
+        <option value="Allahabad (PRYJ)">
+        <option value="Gorakhpur (GKP)">
+        <option value="Jabalpur (JBP)">
+        <option value="Raipur (R)">
+        <option value="Bilaspur (BSP)">
+        <option value="Asansol (ASN)">
+        <option value="Dhanbad (DHN)">
+        <option value="Jamshedpur (TATA)">
+        <option value="Vijayawada (BZA)">
+        <option value="Guntur (GNT)">
+        <option value="Kozhikode (CLT)">
+        <option value="Mangalore (MAQ)">
+        <option value="Hubli (UBL)">
+        <option value="Gwalior (GWL)">
+        <option value="Mathura (MTJ)">
+        <option value="Bikaner (BKN)">
+        <option value="Ajmer (AII)">
+        <option value="Kota (KOTA)">
+        <option value="Solapur (SUR)">
+        <option value="Kolhapur (KOP)">
+    </datalist>
+
+    <!-- Modal Overlay (for Login/Register/Gemini/Sidebar) -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" aria-hidden="true"></div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-login-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Welcome Back!</h2>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    Log In
+                </button>
+                <p class="text-sm text-center text-gray-500">
+                    Don't have an account? <a href="#" id="show-register-from-login" class="font-medium text-indigo-600 hover:underline">Register here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-register-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Create Your Account</h2>
+            <form id="register-form" class="space-y-6">
+                <div>
+                    <label for="register-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="register-name" placeholder="John Doe" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Password</Player>
+                    <input type="password" id="register-password" placeholder="Create a strong password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gemini API Modal -->
+    <div id="gemini-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-gemini-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 id="gemini-modal-title" class="text-2xl font-bold text-center text-gray-900 mb-6">Trip Planner</h2>
+            <div id="gemini-loading" class="text-center py-12 hidden">
+                <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600">Generating your itinerary...</p>
+            </div>
+            <div id="gemini-content" class="prose prose-indigo max-w-none"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar-menu" class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform translate-x-full">
+        <div class="flex justify-between items-center p-4 border-b border-gray-200">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">My Account</h2>
+                <p id="sidebar-user-email" class="text-sm text-gray-600">demo@user.com</p>
+            </div>
+            <button id="close-sidebar-btn" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <nav class="p-4 space-y-2">
+            <a href="#" id="sidebar-link-profile" class="sidebar-nav-link flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" /></svg>
+                My Profile
+            </a>
+            <a href="#" id="sidebar-link-bookings" class="sidebar-nav-link flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-7.5 0h7.5m-7.5 0h7.5m2.25-4.5h.008m-.008 0h.008m-.008 0h.008m.75-1.5h.008m-.008 0h.008m-.008 0h.008M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                My Bookings
+            </a>
+        </nav>
+        <div class="p-4 absolute bottom-0 w-full border-t border-gray-200">
+            <button id="sidebar-logout-btn" class="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+                Logout
+            </button>
+        </div>
+    </div>
+    
+    <!-- 4. All JavaScript -->
+    <script type="module">
+        // =================================================================================
+        // 1. FIREBASE & GEMINI SDK IMPORTS
+        // =================================================================================
+        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            updateProfile,
+            updatePassword,
+            signInAnonymously,
+            signInWithCustomToken
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc, 
+            addDoc, 
+            collection, 
+            query, 
+            where, 
+            getDocs,
+            onSnapshot,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =================================================================================
+        // 2. CONFIGURATION & APP STATE
+        // =================================================================================
+
+        // --- Firebase Config ---
+        // These variables MUST be populated by the environment.
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        // --- Gemini API Config ---
+        const GEMINI_API_KEY = ""; // Kept as "" per instructions.
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+        
+        // --- App State ---
+        let db, auth, userId, currentBooking;
+        let passengers = [];
+        let allPages = [];
+        let unsubscribeBookings; // To detach Firestore listener
+
+        // --- Mock Train Data (Master List) ---
+        // This list is used by the frontend as a fallback if the C++ backend isn't running.
+        // It's also used to provide the random "mock" data.
+        const masterTrainList = [
+            { id: "12001", name: "Shatabdi Express" /* fare: 1350 REMOVED */ },
+            { id: "12049", name: "Gatimaan Express" /* fare: 1050 REMOVED */ },
+            { id: "22436", name: "Vande Bharat Exp" /* fare: 1850 REMOVED */ },
+            { id: "12951", name: "Mumbai Rajdhani" /* fare: 2870 REMOVED */ },
+            { id: "12261", name: "Duronto Express" /* fare: 3100 REMOVED */ },
+            { id: "12138", name: "Punjab Mail" /* fare: 750 REMOVED */ },
+            { id: "12801", name: "Purushottam Exp" /* fare: 800 REMOVED */ },
+            { id: "12313", name: "Sealdah Rajdhani" /* fare: 2900 REMOVED */ },
+            { id: "12301", name: "Howrah Rajdhani" /* fare: 3000 REMOVED */ },
+            { id: "12424", name: "Guwahati Rajdhani" /* fare: 3400 REMOVED */ },
+            { id: "12453", name: "Ranchi Rajdhani" /* fare: 2700 REMOVED */ },
+            { id: "20839", name: "Ranchi Vande Bharat" /* fare: 1150 REMOVED */ },
+            { id: "12724", name: "Telangana Express" /* fare: 850 REMOVED */ },
+            { id: "12622", name: "Tamil Nadu Exp" /* fare: 950 REMOVED */ },
+            { id: "12615", name: "Grand Trunk Exp" /* fare: 900 REMOVED */ },
+            { id: "22692", name: "Bengaluru Rajdhani" /* fare: 3500 REMOVED */ },
+            { id: "12434", name: "Chennai Rajdhani" /* fare: 3300 REMOVED */ },
+            { id: "12953", name: "August Kranti Rajdhani" /* fare: 2750 REMOVED */ },
+            { id: "12431", name: "Trivandrum Rajdhani" /* fare: 4200 REMOVED */ },
+            { id: "12248", name: "Howrah Yuva Exp" /* fare: 1700 REMOVED */ },
+            { id: "12002", name: "New Delhi Shatabdi" /* fare: 1300 REMOVED */ },
+            { id: "12011", name: "Kalka Shatabdi" /* fare: 800 REMOVED */ },
+            { id: "12017", name: "Dehradun Shatabdi" /* fare: 1100 REMOVED */ },
+            { id: "12033", name: "Kanpur Shatabdi" /* fare: 950 REMOVED */ },
+            { id: "12039", name: "Kathgodam Shatabdi" /* fare: 900 REMOVED */ },
+            { id: "22221", name: "Mumbai CSMT Rajdhani" /* fare: 2950 REMOVED */ },
+            { id: "12909", name: "Garib Rath Express" /* fare: 1100 REMOVED */ },
+            { id: "12147", name: "Nizamuddin Express" /* fare: 820 REMOVED */ },
+            { id: "12171", name: "Lokmanya Tilak Exp" /* fare: 650 REMOVED */ },
+            { id: "12708", name: "AP Sampark Kranti" /* fare: 880 REMOVED */ },
+            { id: "12721", name: "Dakshin Express" /* fare: 860 REMOVED */ },
+            { id: "12860", name: "Gitanjali Express" /* fare: 810 REMOVED */ },
+            { id: "12876", name: "Neelachal Express" /* fare: 920 REMOVED */ },
+            { id: "12192", name: "Jabalpur SF Exp" /* fare: 600 REMOVED */ },
+            { id: "12559", name: "Shiv Ganga Exp" /* fare: 450 REMOVED */ },
+            { id: "12397", name: "Mahabodhi Exp" /* fare: 520 REMOVED */ },
+            { id: "12367", name: "Vikramshila Exp" /* fare: 630 REMOVED */ },
+            { id: "12419", name: "Gomti Express" /* fare: 350 REMOVED */ },
+            { id: "14013", name: "Sultanpur Express" /* fare: 400 REMOVED */ },
+            { id: "12230", name: "Lucknow Mail" /* fare: 410 REMOVED */ },
+            { id: "12429", name: "Lucknow AC Exp" /* fare: 900 REMOVED */ },
+            { id: "22824", name: "Bhubaneswar Rajdhani" /* fare: 3100 REMOVED */ },
+            { id: "12816", name: "Nandan Kanan Exp" /* fare: 820 REMOVED */ },
+            { id: "18478", name: "Kalinga Utkal Exp" /* fare: 1100 REMOVED */ },
+            { id: "15657", name: "Brahmaputra Mail" /* fare: 1150 REMOVED */ },
+            { id: "12506", name: "North East Exp" /* fare: 910 REMOVED */ },
+            { id: "12156", name: "Bhopal Express" /* fare: 420 REMOVED */ },
+            { id: "12716", name: "Sachkhand Exp" /* fare: 780 REMOVED */ },
+            { id: "11078", name: "Jhelum Express" /* fare: 1050 REMOVED */ },
+            { id: "12926", name: "Paschim Express" /* fare: 800 REMOVED */ },
+        ];
+
+
+        // =================================================================================
+        // 3. MAIN APP LOGIC (RUNS ONCE DOM IS LOADED)
+        // =================================================================================
+
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // --- Grab all DOM Elements ---
+            const allPageDivs = document.querySelectorAll(".page-content");
+            const searchPage = document.getElementById("page-search");
+            const searchResultsPage = document.getElementById("page-search-results");
+            const bookingsPage = document.getElementById("page-bookings");
+            const profilePage = document.getElementById("page-profile");
+            const passengerPage = document.getElementById("page-passenger-details");
+            const paymentPage = document.getElementById("page-payment");
+            const confirmationPage = document.getElementById("page-confirmation");
+
+            const loginBtn = document.getElementById("login-btn");
+            const registerBtn = document.getElementById("register-btn");
+            const authButtons = document.getElementById("auth-buttons");
+            const profileMenu = document.getElementById("profile-menu");
+            const profileBadgeBtn = document.getElementById("profile-badge-btn");
+            
+            const modalOverlay = document.getElementById("modal-overlay");
+            const loginModal = document.getElementById("login-modal");
+            const registerModal = document.getElementById("register-modal");
+            const geminiModal = document.getElementById("gemini-modal");
+            
+            const closeLoginModalBtn = document.getElementById("close-login-modal");
+            const closeRegisterModalBtn = document.getElementById("close-register-modal");
+            const closeGeminiModalBtn = document.getElementById("close-gemini-modal");
+            
+            const showRegisterFromLogin = document.getElementById("show-register-from-login");
+            
+            const loginForm = document.getElementById("login-form");
+            const registerForm = document.getElementById("register-form");
+            
+            const sidebarMenu = document.getElementById("sidebar-menu");
+            const closeSidebarBtn = document.getElementById("close-sidebar-btn");
+            const sidebarUserEmail = document.getElementById("sidebar-user-email");
+            const sidebarLogoutBtn = document.getElementById("sidebar-logout-btn");
+            
+            const navSearchLink = document.getElementById("nav-search");
+            const logoHomeLink = document.getElementById("logo-home-link");
+            const sidebarProfileLink = document.getElementById("sidebar-link-profile");
+            const sidebarBookingsLink = document.getElementById("sidebar-link-bookings");
+            const profileViewBookingsLink = document.getElementById("profile-view-bookings");
+
+            const searchForm = document.getElementById("search-form");
+            const fromStationInput = document.getElementById("from-station");
+            const toStationInput = document.getElementById("to-station");
+            const dateInput = document.getElementById("journey-date");
+            const searchResultsContainer = document.getElementById("search-results-container");
+            const resultsBackBtn = document.getElementById("results-back-btn");
+
+            const inspirationPrompt = document.getElementById("inspiration-prompt");
+            const getInspirationBtn = document.getElementById("get-inspiration-btn");
+            const inspirationResults = document.getElementById("inspiration-results");
+            
+            const geminiLoading = document.getElementById("gemini-loading");
+            const geminiContent = document.getElementById("gemini-content");
+            const geminiModalTitle = document.getElementById("gemini-modal-title");
+
+            const passengerJourneySummary = document.getElementById("passenger-journey-summary");
+            const passengerListContainer = document.getElementById("passenger-list-container");
+            const addPassengerForm = document.getElementById("add-passenger-form");
+            const passengerBackBtn = document.getElementById("passenger-back-btn");
+            const passengerProceedBtn = document.getElementById("passenger-proceed-btn");
+            
+            const paymentJourneySummary = document.getElementById("payment-journey-summary");
+            const paymentPassengerSummary = document.getElementById("payment-passenger-summary");
+            const paymentTotalFare = document.getElementById("payment-total-fare");
+            const paymentForm = document.getElementById("payment-form");
+
+            const confirmationPnr = document.getElementById("confirmation-pnr");
+            const confirmationJourneySummary = document.getElementById("confirmation-journey-summary");
+            const confirmationPassengerSummary = document.getElementById("confirmation-passenger-summary");
+            const confirmationHomeBtn = document.getElementById("confirmation-home-btn");
+            
+            const bookingsContainer = document.getElementById("bookings-container");
+            const noBookingsMessage = document.getElementById("no-bookings-message");
+            
+            const profileForm = document.getElementById("profile-form");
+            const profileName = document.getElementById("profile-name");
+            const profileEmail = document.getElementById("profile-email");
+            const profilePhone = document.getElementById("profile-phone");
+            
+            allPages = [searchPage, searchResultsPage, bookingsPage, profilePage, passengerPage, paymentPage, confirmationPage];
+
+
+            // --- Core App Functions ---
+            
+            /**
+             * Initializes Firebase App and sets up auth listener.
+             */
+            async function initializeAppCore() {
+                try {
+                    if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
+                        console.warn("Firebase config is missing. App will run in anonymous mode.");
+                        // Fallback for environments without injected config
+                        initializeApp({ apiKey: "mock", authDomain: "mock.firebaseapp.com", projectId: "mock" });
+                        auth = getAuth(); // Initialize auth for anonymous sign-in
+                        await signInAnonymously(auth); // Sign in anonymously
+                    } else {
+                        const app = initializeApp(firebaseConfig);
+                        db = getFirestore(app);
+                        auth = getAuth(app);
+                        setLogLevel('Debug'); // Enable Firestore logging
+
+                        // Sign in with token if available, otherwise anonymously
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+
+                    // Auth state listener
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            // User is signed in
+                            userId = user.uid; // Store UID
+                            if(user.isAnonymous) {
+                                console.log("Signed in anonymously:", user.uid);
+                                handleUserLoggedOut(); // Show login/register buttons
+                            } else {
+                                console.log("User signed in:", user.uid);
+                                handleUserLoggedIn(user, user.email);
+                                attachBookingsListener(user.uid);
+                            }
+                        } else {
+                            // User is signed out (should not happen with anonymous)
+                            console.log("User signed out. Signing in anonymously.");
+                            userId = null;
+                            handleUserLoggedOut();
+                            if (unsubscribeBookings) {
+                                unsubscribeBookings(); // Detach listener
+                            }
+                            await signInAnonymously(auth); // Ensure user is always signed in
+                        }
+                    });
+                    
+                    // Initialize non-Firebase app features
+                    initDateInput();
+                    setupEventListeners();
+
+                } catch (error) {
+                    console.error("Error initializing app:", error);
+                    showErrorMessage("Could not initialize the application. Please refresh.");
+                }
+            }
+            
+            /**
+             * Sets up all event listeners for the application.
+             */
+            function setupEventListeners() {
+                // Auth
+                loginBtn.addEventListener("click", () => showModal(loginModal));
+                registerBtn.addEventListener("click", () => showModal(registerModal));
+                closeLoginModalBtn.addEventListener("click", () => hideAllModals());
+                closeRegisterModalBtn.addEventListener("click", () => hideAllModals());
+                modalOverlay.addEventListener("click", () => hideAllModals());
+                showRegisterFromLogin.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    hideAllModals();
+                    showModal(registerModal);
+                });
+                loginForm.addEventListener("submit", handleLogin);
+                registerForm.addEventListener("submit", handleRegister);
+                
+                // Sidebar
+                profileBadgeBtn.addEventListener("click", () => sidebarMenu.classList.add("open"));
+                closeSidebarBtn.addEventListener("click", () => sidebarMenu.classList.remove("open"));
+                sidebarLogoutBtn.addEventListener("click", handleLogout);
+                
+                // Navigation
+                logoHomeLink.addEventListener("click", (e) => { e.preventDefault(); showPage(searchPage); });
+                navSearchLink.addEventListener("click", (e) => { e.preventDefault(); showPage(searchPage); });
+                sidebarProfileLink.addEventListener("click", (e) => { e.preventDefault(); showPage(profilePage); sidebarMenu.classList.remove("open"); });
+                sidebarBookingsLink.addEventListener("click", (e) => { e.preventDefault(); showPage(bookingsPage); sidebarMenu.classList.remove("open"); });
+                profileViewBookingsLink.addEventListener("click", (e) => { e.preventDefault(); showPage(bookingsPage); });
+                resultsBackBtn.addEventListener("click", (e) => { e.preventDefault(); showPage(searchPage); });
+                passengerBackBtn.addEventListener("click", (e) => { e.preventDefault(); showPage(searchResultsPage); });
+                confirmationHomeBtn.addEventListener("click", (e) => { e.preventDefault(); showPage(searchPage); });
+
+                // Search & Booking Flow
+                searchForm.addEventListener("submit", handleSearchTrains);
+                addPassengerForm.addEventListener("submit", handleAddPassenger);
+                passengerProceedBtn.addEventListener("click", handleProceedToPayment);
+                paymentForm.addEventListener("submit", handlePayment);
+                
+                // Gemini API
+                getInspirationBtn.addEventListener("click", handleGetInspiration);
+                closeGeminiModalBtn.addEventListener("click", () => hideAllModals());
+
+                // Profile
+                profileForm.addEventListener("submit", handleProfileUpdate);
+            }
+
+            /**
+             * Hides all pages and shows the specified page.
+             * @param {HTMLElement} pageToShow The page element to display.
+             */
+            function showPage(pageToShow) {
+                allPages.forEach(page => page.classList.add("hidden"));
+                pageToShow.classList.remove("hidden");
+                window.scrollTo(0, 0); // Scroll to top on page change
+            }
+            
+            /**
+             * Shows a modal and the overlay.
+             * @param {HTMLElement} modalToShow The modal element to display.
+             */
+            function showModal(modalToShow) {
+                modalOverlay.classList.remove("hidden");
+                modalToShow.classList.remove("hidden");
+            }
+            
+            /**
+             * Hides all modals and the overlay.
+             */
+            function hideAllModals() {
+                modalOverlay.classList.add("hidden");
+                loginModal.classList.add("hidden");
+                registerModal.classList.add("hidden");
+                geminiModal.classList.add("hidden");
+            }
+
+            /**
+             * Sets the date input to today and max 60 days out.
+             */
+            function initDateInput() {
+                const today = new Date();
+                const todayString = today.toISOString().split('T')[0];
+                
+                today.setDate(today.getDate() + 60);
+                const maxDateString = today.toISOString().split('T')[0];
+                
+                dateInput.setAttribute('min', todayString);
+                dateInput.setAttribute('max', maxDateString);
+                dateInput.value = todayString;
+            }
+
+            /**
+             * Updates UI to reflect a logged-in state.
+             */
+            function handleUserLoggedIn(user, email) {
+                authButtons.classList.add("hidden");
+                profileMenu.classList.remove("hidden");
+                sidebarUserEmail.textContent = email || "User";
+                
+                // Populate profile page
+                profileName.value = user.displayName || "";
+                profileEmail.value = user.email || "";
+                // phone (not natively in firebase auth, would be in firestore)
+            }
+            
+            /**
+             * Updates UI to reflect a logged-out state (anonymous).
+             */
+            function handleUserLoggedOut() {
+                authButtons.classList.remove("hidden");
+                profileMenu.classList.add("hidden");
+                sidebarUserEmail.textContent = "";
+                
+                // Clear profile form
+                profileName.value = "Demo User";
+                profileEmail.value = "demo@user.com";
+                profilePhone.value = "";
+                
+                // Clear bookings
+                if(bookingsContainer) {
+                    bookingsContainer.innerHTML = '';
+                    bookingsContainer.appendChild(noBookingsMessage);
+                }
+
+                // Go to home page
+                showPage(searchPage);
+            }
+
+
+            // --- Auth Handlers ---
+
+            /**
+             * Handles user registration.
+             */
+            async function handleRegister(e) {
+                e.preventDefault();
+                const name = registerForm['register-name'].value;
+                const email = registerForm['register-email'].value;
+                const password = registerForm['register-password'].value;
+                
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                    
+                    // Manually update profile form since listener might be delayed
+                    profileName.value = name;
+                    profileEmail.value = email;
+
+                    hideAllModals();
+                    registerForm.reset();
+                    showSuccessMessage("Account created successfully!");
+                } catch (error) {
+                    console.error("Register error:", error);
+                    showErrorMessage(error.message);
+                }
+            }
+
+            /**
+             * Handles user login.
+             */
+            async function handleLogin(e) {
+                e.preventDefault();
+                const email = loginForm['login-email'].value;
+                const password = loginForm['login-password'].value;
+                
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    hideAllModals();
+                    loginForm.reset();
+                    showSuccessMessage("Logged in successfully!");
+                } catch (error) {
+                    console.error("Login error:", error);
+                    showErrorMessage(error.message);
+                }
+            }
+
+            /**
+             * Handles user logout.
+             */
+            async function handleLogout() {
+                try {
+                    await signOut(auth);
+                    sidebarMenu.classList.remove("open");
+                    showSuccessMessage("Logged out successfully.");
+                    // Re-sign in anonymously (auth listener will handle UI)
+                } catch (error) {
+                    console.error("Logout error:", error);
+                    showErrorMessage(error.message);
+                }
+            }
+            
+            /**
+             * Handles user profile update.
+             */
+            async function handleProfileUpdate(e) {
+                e.preventDefault();
+                const user = auth.currentUser;
+                if (!user || user.isAnonymous) {
+                    showErrorMessage("You must be logged in to update your profile.");
+                    return;
+                }
+
+                const newName = profileName.value;
+                const newPassword = document.getElementById("profile-password").value;
+
+                try {
+                    if (user.displayName !== newName) {
+                        await updateProfile(user, { displayName: newName });
+                    }
+                    if (newPassword) {
+                        await updatePassword(user, newPassword);
+                    }
+                    showSuccessMessage("Profile updated successfully!");
+                    document.getElementById("profile-password").value = "";
+                } catch (error) {
+                    console.error("Profile update error:", error);
+                    showErrorMessage(`Error updating profile: ${error.message}`);
+                }
+            }
+
+
+            // --- Search & Booking Handlers ---
+
+            /**
+             * Handles the train search form submission.
+             */
+            async function handleSearchTrains(e) {
+                e.preventDefault();
+                showPage(searchResultsPage);
+                searchResultsContainer.innerHTML = getLoadingSpinnerHTML("Searching for trains...");
+                
+                const from = fromStationInput.value;
+                const to = toStationInput.value;
+                const date = dateInput.value;
+
+                if (!from || !to || !date) {
+                    showErrorMessage("Please fill in From, To, and Date.");
+                    searchResultsContainer.innerHTML = `<p class="text-center text-red-500">Please fill in all search fields.</p>`;
+                    return;
+                }
+
+                // Store search details for booking
+                currentBooking = { from, to, date };
+
+                try {
+                    // Try fetching from C++ backend first
+                    const response = await fetch('http://localhost:18080/api/search', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ from, to, date })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('C++ backend not reachable. Using mock data.');
+                    }
+                    
+                    const data = await response.json();
+                    if (data.status === 'success' && data.trains.length > 0) {
+                        displayTrainResults(data.trains);
+                    } else {
+                        displayTrainResults([]); // Show no results message
+                    }
+
+                } catch (error) {
+                    console.warn(error.message);
+                    // Fallback to mock data
+                    // Simulate network delay
+                    setTimeout(() => {
+                        const mockData = getMockTrains();
+                        displayTrainResults(mockData);
+                    }, 1000);
+                }
+            }
+
+            /**
+             * Gets a random selection of trains from the master list.
+             */
+            function getMockTrains() {
+                const shuffled = [...masterTrainList].sort(() => 0.5 - Math.random());
+                const selectedCount = 3 + Math.floor(Math.random() * 3); // Get 3-5 random trains
+                const selectedTrains = shuffled.slice(0, selectedCount);
+                
+                const times = ["06:00", "08:15", "11:30", "14:05", "17:15", "20:00", "22:45"];
+                const durations = ["6h 00m", "8h 15m", "10h 30m", "12h 45m", "15h 00m"];
+                
+                // NEW Availability logic
+                const baseClasses = [
+                    { "class": "SL", "fare": 750 },
+                    { "class": "3A", "fare": 1350 },
+                    { "class": "2A", "fare": 1850 },
+                    { "class": "1A", "fare": 2400 }
+                ];
+                const statuses = [
+                    { status: "AVL 120", color: "green" }, { status: "AVL 45", color: "green" },
+                    { status: "RAC 15", color: "orange" }, { status: "WL 30", color: "orange" },
+                    { status: "NOT AVAILABLE", color: "red" },
+                ];
+
+                return selectedTrains.map(train => {
+                    const depTime = times[Math.floor(Math.random() * times.length)];
+                    const arrTime = times[Math.floor(Math.random() * times.length)];
+                    const duration = durations[Math.floor(Math.random() * durations.length)];
+
+                    // Create 3 random availabilities
+                    let shuffledClasses = [...baseClasses].sort(() => 0.5 - Math.random());
+                    let availability = shuffledClasses.slice(0, 3).map(cls => {
+                        let randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                        return {
+                            "class": cls.class,
+                            "status": randomStatus.status,
+                            "color": randomStatus.color,
+                            "fare": cls.fare + (Math.floor(Math.random() * 200) - 100) // base fare +/- 100
+                        };
+                    });
+
+                    // Use currentBooking.from and currentBooking.to for mock data
+                    return {
+                        ...train, 
+                        runsOn: "M, Tu, W, Th, F, Sa, Su".substring(0, Math.floor(5 + Math.random() * 20)),
+                        dep: depTime, // Use 'dep' to match C++
+                        from: currentBooking.from, // Use 'from'
+                        arr: arrTime, // Use 'arr' to match C++
+                        to: currentBooking.to, // Use 'to'
+                        dur: duration, // Use 'dur' to match C++
+                        availability: availability // NEW
+                    };
+                });
+            }
+            
+            /**
+             * Renders the list of trains on the search results page.
+             */
+            function displayTrainResults(trains) {
+                searchResultsContainer.innerHTML = ''; // Clear loading
+                if (trains.length === 0) {
+                    searchResultsContainer.innerHTML = `<p class="text-center text-gray-500">No trains found for this route.</p>`;
+                    return;
+                }
+                
+                trains.forEach(train => {
+                    // NEW availabilityHtml
+                    const availabilityHtml = train.availability.map(avail => `
+                        <div class="book-class-btn text-center px-3 py-2 rounded-lg cursor-pointer transition 
+                                   ${avail.color === 'green' ? 'bg-green-50 hover:bg-green-100 border border-green-200' :
+                                   (avail.color === 'orange' ? 'bg-orange-50 hover:bg-orange-100 border border-orange-200' : 
+                                   'bg-red-50 border border-red-200 opacity-60 cursor-not-allowed')}"
+                             data-class="${avail.class}"
+                             data-fare="${avail.fare}"
+                             data-status="${avail.status}">
+                            
+                            <div class="font-bold text-sm ${
+                                avail.color === 'green' ? 'text-green-700' :
+                                (avail.color === 'orange' ? 'text-orange-700' : 'text-red-700')
+                            }">
+                                ${avail.class}
+                            </div>
+                            <div class="font-medium text-xs ${
+                                avail.color === 'green' ? 'text-green-600' :
+                                (avail.color === 'orange' ? 'text-orange-600' : 'text-red-600')
+                            }">
+                                ${avail.status}
+                            </div>
+                            <div class="text-xs text-gray-700 mt-1">₹ ${avail.fare}</div>
+                        </div>
+                    `).join('');
+
+                    const card = document.createElement('div');
+                    // Store all train data on the card element itself
+                    card.dataset.train = JSON.stringify(train);
+                    card.className = 'train-card bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4';
+                    card.innerHTML = `
+                        <div>
+                            <h3 class="text-xl font-bold text-indigo-700">${train.id} - ${train.name}</h3>
+                            <div class="flex flex-wrap gap-x-6 gap-y-2 text-gray-700 mt-2">
+                                <span>Departs: <strong class="text-gray-900">${train.dep}</strong></span>
+                                <span>Arrives: <strong class="text-gray-900">${train.arr}</strong></span>
+                                <span>Duration: <strong class="text-gray-900">${train.dur}</strong></span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+                            <!-- Replaced old content with new availability grid -->
+                            <div class="grid grid-cols-3 gap-2">
+                                ${availabilityHtml}
+                            </div>
+                            <button class="plan-trip-btn w-full md:w-auto px-5 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm hover:bg-indigo-100 transition"
+                                data-destination="${currentBooking.to.split(' ')[0]}">
+                                ✨ Plan My Trip
+                            </button>
+                        </div>
+                    `;
+                    searchResultsContainer.appendChild(card);
+                });
+
+                // Add event listeners to new buttons
+                document.querySelectorAll('.book-class-btn').forEach(btn => {
+                    btn.addEventListener('click', handleBookNow);
+                });
+                document.querySelectorAll('.plan-trip-btn').forEach(btn => {
+                    btn.addEventListener('click', handlePlanTrip);
+                });
+            }
+
+            /**
+             * Handles the "Book Now" button click.
+             */
+            function handleBookNow(e) {
+                if (!userId || (auth.currentUser && auth.currentUser.isAnonymous)) {
+                    showErrorMessage("Please log in or register to book a ticket.");
+                    showModal(loginModal);
+                    return;
+                }
+                
+                const btn = e.currentTarget; // Changed from e.target
+                const trainCard = btn.closest('.train-card'); // Find parent train card
+                const trainData = JSON.parse(trainCard.dataset.train); // Get all train data
+
+                if (btn.dataset.status.includes('NOT AVAILABLE')) {
+                    showErrorMessage("This class is not available for booking.");
+                    return;
+                }
+
+                currentBooking.train = trainData; // Store full train data
+                
+                // Store selected class data
+                currentBooking.selectedClass = {
+                    class: btn.dataset.class,
+                    fare: parseFloat(btn.dataset.fare),
+                    status: btn.dataset.status
+                };
+                
+                passengers = []; // Clear passengers from previous booking
+                updatePassengerPage();
+                showPage(passengerPage);
+            }
+            
+            /**
+             * Updates the summary and passenger list on the passenger page.
+             */
+            function updatePassengerPage() {
+                // Update journey summary
+                passengerJourneySummary.innerHTML = getJourneySummaryHtml(currentBooking.train, currentBooking.selectedClass);
+                
+                // Update passenger list
+                passengerListContainer.innerHTML = '';
+                if (passengers.length === 0) {
+                    passengerListContainer.innerHTML = `<p class="text-gray-500">No passengers added yet.</p>`;
+                } else {
+                    passengers.forEach((p, index) => {
+                        const passengerDiv = document.createElement('div');
+                        passengerDiv.className = 'flex justify-between items-center bg-white p-3 rounded-lg border border-gray-200';
+                        passengerDiv.innerHTML = `
+                            <div>
+                                <span class="font-medium text-gray-900">${p.name}</span>
+                                <span class="text-gray-600 text-sm"> (${p.age}, ${p.gender})</span>
+                            </div>
+                            <button class="remove-passenger-btn text-red-500 hover:text-red-700" data-index="${index}">
+                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        `;
+                        passengerListContainer.appendChild(passengerDiv);
+                    });
+                    
+                    document.querySelectorAll('.remove-passenger-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            // Find the button that was clicked
+                            const clickedButton = e.currentTarget;
+                            // Get the index from its data attribute
+                            const indexToRemove = parseInt(clickedButton.dataset.index, 10);
+                            passengers.splice(indexToRemove, 1);
+                            updatePassengerPage();
+                        });
+                    });
+                }
+                
+                // Enable/disable proceed button
+                if (passengers.length > 0) {
+                    passengerProceedBtn.disabled = false;
+                } else {
+                    passengerProceedBtn.disabled = true;
+                }
+            }
+
+            /**
+             * Handles adding a new passenger from the form.
+             */
+            function handleAddPassenger(e) {
+                e.preventDefault();
+                const name = addPassengerForm['passenger-name'].value;
+                const age = addPassengerForm['passenger-age'].value;
+                const gender = addPassengerForm['passenger-gender'].value;
+                const berth = addPassengerForm['passenger-berth'].value;
+                
+                passengers.push({ name, age, gender, berth });
+                addPassengerForm.reset();
+                updatePassengerPage();
+            }
+
+            /**
+             * Handles proceeding to the payment page.
+             */
+            function handleProceedToPayment() {
+                currentBooking.passengers = passengers;
+                currentBooking.totalFare = currentBooking.selectedClass.fare * passengers.length; // Use class fare
+                
+                // Update Payment Page Summary
+                paymentJourneySummary.innerHTML = getJourneySummaryHtml(currentBooking.train, currentBooking.selectedClass);
+                
+                paymentPassengerSummary.innerHTML = `
+                    <p><strong>Passengers (${passengers.length}):</strong></p>
+                    <ul class="list-disc list-inside text-sm text-gray-600">
+                        ${passengers.map(p => `<li>${p.name} (${p.age}, ${p.gender})</li>`).join('')}
+                    </ul>
+                `;
+                
+                paymentTotalFare.textContent = `₹ ${currentBooking.totalFare.toFixed(2)}`;
+                
+                showPage(paymentPage);
+            }
+
+            /**
+             * Handles the (simulated) payment form submission.
+             */
+            async function handlePayment(e) {
+                e.preventDefault();
+                
+                // Check for auth one last time
+                if (!userId || (auth.currentUser && auth.currentUser.isAnonymous)) {
+                    showErrorMessage("Your session expired. Please log in to complete the booking.");
+                    showModal(loginModal);
+                    return;
+                }
+
+                // 1. Generate PNR and save to database
+                const pnr = `${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000000) + 1000000}`;
+                currentBooking.pnr = pnr;
+                currentBooking.bookingDate = new Date().toISOString();
+                currentBooking.journeyDate = dateInput.value; // Save the journey date
+                
+                try {
+                    // Save to Firestore
+                    const bookingCollectionPath = `artifacts/${appId}/users/${userId}/bookings`;
+                    // Add selectedClass to the booking data
+                    await addDoc(collection(db, bookingCollectionPath), {
+                        ...currentBooking,
+                        userId: userId // Ensure userId is saved
+                    });
+
+                    // 2. Update Confirmation Page
+                    confirmationPnr.textContent = pnr;
+                    confirmationJourneySummary.innerHTML = getJourneySummaryHtml(currentBooking.train, currentBooking.selectedClass);
+                    
+                    confirmationPassengerSummary.innerHTML = `
+                        <p><strong>Passengers (${passengers.length}):</strong></p>
+                        <ul class="list-disc list-inside text-sm text-gray-600">
+                            ${passengers.map(p => `<li>${p.name} (${p.age}, ${p.gender})</li>`).join('')}
+                        </ul>
+                    `;
+                    
+                    // 3. Show confirmation page
+                    showPage(confirmationPage);
+                    showSuccessMessage("Booking confirmed!");
+                    
+                    // 4. Reset for next booking
+                    currentBooking = {};
+                    passengers = [];
+                    paymentForm.reset();
+
+                } catch (error) {
+                    console.error("Error saving booking: ", error);
+                    showErrorMessage("Could not save your booking. Please try again.");
+                }
+            }
+
+
+            // --- Firestore Bookings Listener ---
+            
+            /**
+             * Attaches a real-time listener for the user's bookings.
+             */
+            function attachBookingsListener(uid) {
+                if (unsubscribeBookings) {
+                    unsubscribeBookings(); // Detach old listener if exists
+                }
+                
+                const bookingCollectionPath = `artifacts/${appId}/users/${uid}/bookings`;
+                const q = query(collection(db, bookingCollectionPath));
+                
+                unsubscribeBookings = onSnapshot(q, (querySnapshot) => {
+                    const userBookings = [];
+                    querySnapshot.forEach((doc) => {
+                        userBookings.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    // Sort by journey date, newest first
+                    userBookings.sort((a, b) => new Date(b.journeyDate || b.date) - new Date(a.journeyDate || a.date));
+                    
+                    displayUserBookings(userBookings);
+                }, (error) => {
+                    console.error("Error listening to bookings: ", error);
+                    showErrorMessage("Could not load your bookings.");
+                });
+            }
+
+            /**
+             * Renders the user's bookings on the "My Bookings" page.
+             */
+            function displayUserBookings(bookings) {
+                bookingsContainer.innerHTML = ''; // Clear
+                if (bookings.length === 0) {
+                    bookingsContainer.appendChild(noBookingsMessage);
+                    return;
+                }
+                
+                bookings.forEach(booking => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-6 rounded-lg shadow-md border border-gray-200';
+                    const train = booking.train || {}; // Add safety checks
+                    const selectedClass = booking.selectedClass || { class: 'N/A', fare: 0 };
+                    const passengers = booking.passengers || [];
+                    const journeyDate = booking.journeyDate || booking.date; // Handle old and new date fields
+
+                    card.innerHTML = `
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-indigo-700">${train.id || 'N/A'} - ${train.name || 'Unknown Train'}</h3>
+                                <p class="text-gray-600">${train.from || booking.from} &rarr; ${train.to || booking.to}</p>
+                                <p class="text-gray-600">
+                                    Journey Date: <strong class="text-gray-900">${new Date(journeyDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                                </p>
+                            </div>
+                            <div class="text-left sm:text-right mt-2 sm:mt-0">
+                                <span class="block text-lg font-semibold text-gray-900">PNR: ${booking.pnr}</span>
+                                <span class="block text-sm text-gray-500">Booked on ${new Date(booking.bookingDate).toLocaleDateString('en-IN')}</span>
+                                <!-- NEW: Show class and fare -->
+                                <span class="mt-1 inline-block px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                                    ${selectedClass.class} - ₹ ${selectedClass.fare.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-200 mt-4 pt-4">
+                            <h4 class="font-semibold text-gray-800">Passengers (${passengers.length})</h4>
+                            <ul class="list-disc list-inside text-sm text-gray-600 mt-2">
+                                ${passengers.map(p => `<li>${p.name} (${p.age}, ${p.gender})</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    bookingsContainer.appendChild(card);
+                });
+            }
+
+
+            // --- Gemini API Handlers ---
+
+            /**
+             * Handles the "Get Inspiration" button click.
+             */
+            async function handleGetInspiration() {
+                const prompt = inspirationPrompt.value;
+                if (!prompt) {
+                    showErrorMessage("Please enter a description for your ideal trip.");
+                    return;
+                }
+                
+                inspirationResults.innerHTML = getLoadingSpinnerHTML("Asking our AI travel agent...");
+                
+                const systemPrompt = "You are a helpful travel agent specializing in Indian train travel. Based on the user's request, suggest 3-4 destinations in India that are easily accessible by train. For each destination, provide a 2-3 sentence description. Format the response as simple HTML.";
+
+                try {
+                    const response = await callGeminiAPI(systemPrompt, prompt, true); // Use grounding
+                    inspirationResults.innerHTML = response;
+                } catch (error) {
+                    console.error("Gemini Inspiration Error:", error);
+                    inspirationResults.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+                }
+            }
+            
+            /**
+             * Handles the "Plan My Trip" button click on a train card.
+             */
+            async function handlePlanTrip(e) {
+                const destination = e.target.dataset.destination;
+                geminiModalTitle.textContent = `Trip Planner: ${destination}`;
+                geminiContent.innerHTML = '';
+                geminiLoading.classList.remove('hidden');
+                showModal(geminiModal);
+                
+                const systemPrompt = `You are a helpful travel assistant. The user is traveling by train to ${destination}. Provide a concise 2-day sample itinerary with 2-3 bullet points per day (morning, afternoon, evening) of things to do near the main railway station. Format the response as simple HTML (use <h3> for Day 1/Day 2, <p> for time, and <ul>/<li> for activities).`;
+                const userPrompt = `Give me a 2-day itinerary for ${destination}.`;
+                
+                try {
+                    const response = await callGeminiAPI(systemPrompt, userPrompt, false); // No grounding
+                    geminiContent.innerHTML = response;
+                } catch (error) {
+                    console.error("Gemini Itinerary Error:", error);
+                    geminiContent.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+                } finally {
+                    geminiLoading.classList.add('hidden');
+                }
+            }
+            
+            /**
+             * Reusable function to call the Gemini API.
+             * @param {string} systemPrompt The system instruction.
+             * @param {string} userQuery The user's prompt.
+             * @param {boolean} useGrounding Whether to enable Google Search.
+             */
+            async function callGeminiAPI(systemPrompt, userQuery, useGrounding = false) {
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                if (useGrounding) {
+                    payload.tools = [{ "google_search": {} }];
+                }
+                
+                let response;
+                let retries = 3;
+                let delay = 1000;
+
+                while (retries > 0) {
+                    try {
+                        response = await fetch(GEMINI_API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            const candidate = result.candidates?.[0];
+                            if (candidate && candidate.content?.parts?.[0]?.text) {
+                                return candidate.content.parts[0].text;
+                            } else {
+                                throw new Error("Invalid response structure from API.");
+                            }
+                        } else if (response.status === 429) { // Throttling
+                            throw new Error("Rate limit exceeded. Retrying...");
+                        } else {
+                            const errorText = await response.text();
+                            console.error("API Error Details:", errorText);
+                            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                        }
+
+                    } catch (error) {
+                        console.warn(error.message);
+                        retries--;
+                        if (retries === 0) {
+                            throw new Error("Failed to get a response from AI after multiple attempts.");
+                        }
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; // Exponential backoff
+                    }
+                }
+            }
+
+
+            // --- UI Helper Functions ---
+
+            /**
+             * Returns HTML for a loading spinner.
+             */
+            function getLoadingSpinnerHTML(message) {
+                return `
+                    <div class="text-center py-12">
+                        <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="mt-4 text-gray-600">${message}</p>
+                    </div>
+                `;
+            }
+
+            /**
+             * Displays a floating success message.
+             */
+            function showSuccessMessage(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+            
+            /**
+             * Displays a floating error message.
+             */
+            function showErrorMessage(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-5 right-5 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            }
+            
+            /**
+             * Generates a standard journey summary HTML block.
+             * @param {object} train - The train object.
+             * @param {object} selectedClass - The selected class object.
+             */
+            function getJourneySummaryHtml(train, selectedClass) {
+                return `
+                    <h3 class="text-lg font-bold text-indigo-700">${train.id} - ${train.name}</h3>
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mt-2">
+                        <div class="flex items-center space-x-4">
+                            <div>
+                                <div class="text-md font-semibold">${train.dep}</div>
+                                <div class="text-sm text-gray-500">${train.from}</div>
+                            </div>
+                            <div class="text-gray-400">&mdash; ${train.dur} &mdash;</div>
+                            <div>
+                                <div class="text-md font-semibold">${train.arr}</div>
+                                <div class="text-sm text-gray-500">${train.to}</div>
+                            </div>
+                        </div>
+                        <!-- NEW: Show selected class and fare -->
+                        <div class="text-left sm:text-right mt-2 sm:mt-0">
+                            <div class="text-lg font-bold text-indigo-700">${selectedClass.class}</div>
+                            <div class="text-sm text-gray-600">₹ ${selectedClass.fare.toFixed(2)} / person</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // --- Start the App ---
+            initializeAppCore();
+        });
+    </script>
+
+</body>
+</html>

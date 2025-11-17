@@ -4,7 +4,7 @@
 
 HTTPServer::HTTPServer(int port, const std::string& host) 
     : port(port), host(host), router(nullptr), running(false) {
-    setupCORS();
+    // CORS will be set up in start() method
 }
 
 HTTPServer::~HTTPServer() {
@@ -16,10 +16,12 @@ void HTTPServer::setRouter(Router* r) {
 }
 
 void HTTPServer::setupCORS() {
-    server.Options(".*", [](const httplib::Request&, httplib::Response& res) {
+    // Set up preflight handler with wildcard pattern
+    server.Options(R"(.*)", [](const httplib::Request&, httplib::Response& res) {
         res.set_header("Access-Control-Allow-Origin", "*");
         res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        res.set_header("Access-Control-Max-Age", "86400");
         res.status = 204;
     });
 }
@@ -57,52 +59,83 @@ void HTTPServer::start() {
     
     running = true;
     
-    // Setup catch-all handler
-    server.set_mount_point("/", "./");
+    // Setup CORS preflight handler
+    setupCORS();
+    
+    // Helper lambda to add CORS headers to responses
+    auto addCORSHeaders = [](httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    };
     
     // Handle all requests
-    server.Get(".*", [this](const httplib::Request& req, httplib::Response& res) {
-        Request request = parseHttplibRequest(req);
-        Response response = router->route(request);
-        
-        res.status = response.statusCode;
-        res.set_content(response.toString(), "application/json");
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    server.Get(R"(.*)", [this, addCORSHeaders](const httplib::Request& req, httplib::Response& res) {
+        try {
+            std::cout << "GET " << req.path << std::endl;
+            Request request = parseHttplibRequest(req);
+            Response response = router->route(request);
+            
+            res.status = response.statusCode;
+            res.set_content(response.toString(), "application/json");
+            addCORSHeaders(res);
+        } catch (const std::exception& e) {
+            std::cerr << "Error handling GET request: " << e.what() << std::endl;
+            res.status = 500;
+            res.set_content("{\"status\":\"error\",\"message\":\"Internal server error\"}", "application/json");
+            addCORSHeaders(res);
+        }
     });
     
-    server.Post(".*", [this](const httplib::Request& req, httplib::Response& res) {
-        Request request = parseHttplibRequest(req);
-        Response response = router->route(request);
-        
-        res.status = response.statusCode;
-        res.set_content(response.toString(), "application/json");
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    server.Post(R"(.*)", [this, addCORSHeaders](const httplib::Request& req, httplib::Response& res) {
+        try {
+            std::cout << "POST " << req.path << std::endl;
+            Request request = parseHttplibRequest(req);
+            Response response = router->route(request);
+            
+            res.status = response.statusCode;
+            res.set_content(response.toString(), "application/json");
+            addCORSHeaders(res);
+        } catch (const std::exception& e) {
+            std::cerr << "Error handling POST request: " << e.what() << std::endl;
+            res.status = 500;
+            res.set_content("{\"status\":\"error\",\"message\":\"Internal server error\"}", "application/json");
+            addCORSHeaders(res);
+        }
     });
     
-    server.Put(".*", [this](const httplib::Request& req, httplib::Response& res) {
-        Request request = parseHttplibRequest(req);
-        Response response = router->route(request);
-        
-        res.status = response.statusCode;
-        res.set_content(response.toString(), "application/json");
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    server.Put(R"(.*)", [this, addCORSHeaders](const httplib::Request& req, httplib::Response& res) {
+        try {
+            std::cout << "PUT " << req.path << std::endl;
+            Request request = parseHttplibRequest(req);
+            Response response = router->route(request);
+            
+            res.status = response.statusCode;
+            res.set_content(response.toString(), "application/json");
+            addCORSHeaders(res);
+        } catch (const std::exception& e) {
+            std::cerr << "Error handling PUT request: " << e.what() << std::endl;
+            res.status = 500;
+            res.set_content("{\"status\":\"error\",\"message\":\"Internal server error\"}", "application/json");
+            addCORSHeaders(res);
+        }
     });
     
-    server.Delete(".*", [this](const httplib::Request& req, httplib::Response& res) {
-        Request request = parseHttplibRequest(req);
-        Response response = router->route(request);
-        
-        res.status = response.statusCode;
-        res.set_content(response.toString(), "application/json");
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    server.Delete(R"(.*)", [this, addCORSHeaders](const httplib::Request& req, httplib::Response& res) {
+        try {
+            std::cout << "DELETE " << req.path << std::endl;
+            Request request = parseHttplibRequest(req);
+            Response response = router->route(request);
+            
+            res.status = response.statusCode;
+            res.set_content(response.toString(), "application/json");
+            addCORSHeaders(res);
+        } catch (const std::exception& e) {
+            std::cerr << "Error handling DELETE request: " << e.what() << std::endl;
+            res.status = 500;
+            res.set_content("{\"status\":\"error\",\"message\":\"Internal server error\"}", "application/json");
+            addCORSHeaders(res);
+        }
     });
     
     std::cout << "TrainTrack Backend Server starting on http://" << host << ":" << port << std::endl;

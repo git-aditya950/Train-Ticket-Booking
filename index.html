@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainTrack - Book Your Journey</title>
+    
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 3. All Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Create a subtle dot-grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: linear-gradient(to right, #9ca3af 1px, transparent 1px),
+                              linear-gradient(to bottom, #9ca3af 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Main content padding */
+        .page-content {
+            max-width: 72rem;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+            width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+            .page-content {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .page-content {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+
+        /* Hero section background image */
+        #hero-section {
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('https://images.unsplash.com/photo-1570125904223-b6f525b49370?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Active nav link styling */
+        .nav-link.active {
+            border-color: #6366f1; /* indigo-500 */
+            color: #111827; /* gray-900 */
+        }
+        .nav-link:not(.active) {
+            border-color: transparent;
+            color: #4b5563; /* gray-600 */
+        }
+        .nav-link:not(.active):hover {
+            border-color: #d1d5db; /* gray-300 */
+            color: #111827; /* gray-900 */
+        }
+
+        /* Sidebar transitions */
+        #sidebar-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        #sidebar-menu.open {
+            transform: translateX(0);
+        }
+
+        /* Prose styles for Gemini content */
+        .prose {
+            color: #374151; /* gray-700 */
+        }
+        .prose h1, .prose h2, .prose h3 {
+            color: #111827; /* gray-900 */
+            font-weight: 600;
+        }
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+        }
+        .prose li {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        .prose p {
+            line-height: 1.6;
+        }
+        .prose strong {
+            color: #111827; /* gray-900 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 h-full flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" id="logo-home-link" class="flex items-center">
+                        <svg class="h-8 w-auto text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+                        </svg>
+                        <span class="ml-3 text-2xl font-bold text-gray-900">TrainTrack</span>
+                    </a>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="#" id="nav-search" class="nav-link border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        Search Trains
+                    </a>
+                </div>
+
+                <!-- Right-side Login/Register -->
+                <div class="flex items-center space-x-2">
+                    <!-- Auth buttons (Login/Register) - Show when logged out -->
+                    <div id="auth-buttons" class="">
+                        <button id="login-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition">
+                            Log In
+                        </button>
+                        <button id="register-btn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 transition">
+                            Register
+                        </button>
+                    </div>
+                    
+                    <!-- Profile Badge/Button - Show when logged in -->
+                    <div id="profile-menu" class="hidden">
+                        <button id="profile-badge-btn" class="p-2 bg-white border border-gray-300 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 transition focus:outline-none">
+                            <span class="sr-only">Open user menu</span>
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+        <!-- ======================= -->
+        <!--   1. Search Trains Page   -->
+        <!-- ======================= -->
+        <div id="page-search" class="page-content">
+            
+            <!-- Hero Section with Search Form -->
+            <div id="hero-section" class="relative bg-gray-900 py-20 sm:py-32 rounded-2xl overflow-hidden shadow-2xl border border-gray-200">
+                <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h1 class="text-4xl font-bold tracking-tight text-white sm:text-6xl">
+                            Find Your Next Journey
+                        </h1>
+                        <p class="mt-6 text-lg leading-8 text-gray-200">
+                            Book tickets instantly from thousands of stations across India.
+                        </p>
+                    </div>
+
+                    <!-- Search Form (now on hero) -->
+                    <form id="search-form" class="mt-12 bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                        <div>
+                            <label for="from-station" class="block text-sm font-medium text-gray-900">From</label>
+                            <input type="text" id="from-station" list="station-list" placeholder="e.g., New Delhi (NDLS)" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="to-station" class="block text-sm font-medium text-gray-900">To</label>
+                            <input type="text" id="to-station" list="station-list" placeholder="e.g., Mumbai (CST)" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="journey-date" class="block text-sm font-medium text-gray-900">Date of Journey</label>
+                            <input type="date" id="journey-date" class="mt-1 block w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" class="w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition h-[50px]">
+                                <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                                </svg>
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Fallback image -->
+                <img src="https://images.unsplash.com/photo-1570125904223-b6f525b49370?q=80&w=2070&auto=format&fit=crop" class="hidden" alt="Train image" 
+                     onerror="this.onerror=null; document.getElementById('hero-section').style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(https://placehold.co/1920x1080/334155/e2e8f0?text=Welcome+to+TrainTrack)'">
+            </div>
+
+            <!-- Features Section -->
+            <section id="features-section" class="py-16 sm:py-24">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                            Travel Made Simple
+                        </h2>
+                        <p class="mt-4 text-lg text-gray-600">
+                            Everything you need for a seamless booking experience.
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <!-- Feature 1: Instant Booking -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">Instant Booking</h3>
+                            <p class="mt-2 text-gray-600">Book your tickets in just a few clicks. No waiting, no hassle. Your seat is confirmed instantly.</p>
+                        </div>
+                        <!-- Feature 2: Secure Payments -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751A11.953 11.953 0 0 0 12 2.724l-.387.012Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">Secure Payments</h3>
+                            <p class="mt-2 text-gray-600">Your transactions are secured with industry-standard encryption. Book with peace of mind.</p>
+                        </div>
+                        <!-- Feature 3: AI Trip Planner -->
+                        <div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4">
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.47-2.47L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.47-2.47L18 2.25l.259 1.036a3.375 3.375 0 0 0 2.47 2.47L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.47 2.47Z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-900">AI Trip Planner</h3>
+                            <p class="mt-2 text-gray-600">Use our Gemini-powered AI to get inspiration and plan itineraries for your destination.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Gemini API Inspiration Card -->
+            <div id="gemini-inspiration-card" class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 mt-0">
+                <div class="flex items-center">
+                        <span class="text-4xl mr-4">✨</span>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Need Some Inspiration?</h2>
+                            <p class="text-gray-600">Describe your ideal trip, and let AI suggest destinations.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                        <input type="text" id="inspiration-prompt" placeholder="e.g., 'a quiet mountain getaway' or 'historical sites'" class="flex-grow block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button id="get-inspiration-btn" class="w-full sm:w-auto flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition h-[50px]">
+                            Suggest Destinations
+                        </button>
+                    </div>
+                    <div id="inspiration-results" class="mt-6"></div>
+                </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   NEW: Search Results Page -->
+        <!-- ======================= -->
+        <div id="page-search-results" class="page-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-900">Available Trains</h1>
+                <button id="results-back-btn" class="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition">
+                    &larr; Back to Search
+                </button>
+            </div>
+            
+            <!-- Search Results Area -->
+            <div id="search-results" class="">
+                <div id="search-results-container">
+                    <!-- Train cards will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   2. My Bookings Page   -->
+        <!-- ======================= -->
+        <div id="page-bookings" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">My Bookings</h1>
+                <div id="bookings-container" class="space-y-6">
+                    <div id="no-bookings-message" class="text-center text-gray-500 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <p>You have no upcoming or past bookings.</p>
+                        <p class="mt-2 text-sm">Tickets you book will appear here.</p>
+                    </div>
+                    <!-- Real bookings will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!--   3. Profile Page       -->
+        <!-- ======================= -->
+        <div id="page-profile" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-8">My Profile</h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Edit Profile Form -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Account Information</h2>
+                        <form id="profile-form" class="space-y-6">
+                            <div>
+                                <label for="profile-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input type="text" id="profile-name" value="Demo User" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="profile-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                <input type="email" id="profile-email" value="demo@user.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" readonly>
+                            </div>
+                            <div>
+                                <label for="profile-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                <input type="tel" id="profile-phone" value="+91 98765 43210" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="profile-password" class="block text-sm font-medium text-gray-700">New Password</label>
+                                <input type="password" id="profile-password" placeholder="Enter a new password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                                Update Profile
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Booking History Preview -->
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking History</h2>
+                        <div id="profile-bookings-preview" class="text-center text-gray-500 p-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                            <p>This will show a preview of recent bookings.</p>
+                            <a href="#" id="profile-view-bookings" class="mt-2 text-sm font-medium text-indigo-600 hover:underline">View all bookings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   4. Passenger Details Page   -->
+        <!-- ================================== -->
+        <div id="page-passenger-details" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Passenger Details</h1>
+                <div id="passenger-journey-summary" class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8"></div>
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Passengers</h2>
+                    <div id="passenger-list-container" class="space-y-3">
+                        <!-- Passenger items will be added here -->
+                    </div>
+                </div>
+                <form id="add-passenger-form" class="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
+                    <h3 class="font-medium text-gray-900">Add New Passenger</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="passenger-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="passenger-name" placeholder="e.g., John Doe" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="passenger-age" class="block text-sm font-medium text-gray-700">Age</label>
+                            <input type="number" id="passenger-age" placeholder="e.g., 25" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                        </div>
+                        <div>
+                            <label for="passenger-gender" class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select id="passenger-gender" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="passenger-berth" class="block text-sm font-medium text-gray-700">Berth Preference</label>
+                            <select id="passenger-berth" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                <option value="No Choice">No Choice</option>
+                                <option value="Lower">Lower</option>
+                                <option value="Middle">Middle</option>
+                                <option value="Upper">Upper</option>
+                                <option value="Side Lower">Side Lower</option>
+                                <option value="Side Upper">Side Upper</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full md:w-auto px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700">
+                        Add Passenger
+                    </button>
+                </form>
+                <div class="mt-8 flex justify-between">
+                    <button id="passenger-back-btn" class="px-6 py-3 text-base font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">Back to Results</button>
+                    <button id="passenger-proceed-btn" class="px-6 py-3 text-base font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition" disabled>
+                        Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   5. Payment Page           -->
+        <!-- ================================== -->
+        <div id="page-payment" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 max-w-2xl mx-auto">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6">Complete Your Payment</h1>
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Booking Summary</h2>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-3">
+                        <div id="payment-journey-summary"></div>
+                        <div id="payment-passenger-summary"></div>
+                        <div class="border-t border-gray-300 pt-3">
+                            <div class="flex justify-between items-center text-lg font-bold text-gray-900">
+                                <span>Total Fare:</span>
+                                <span id="payment-total-fare">₹ 2,450.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form id="payment-form" class="space-y-6">
+                    <h2 class="text-xl font-semibold text-gray-800">Payment Method (Simulated)</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="card-number" class="block text-sm font-medium text-gray-700">Card Number</label>
+                            <input type="text" id="card-number" value="4242 4242 4242 4242" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="card-expiry" class="block text-sm font-medium text-gray-700">Expiry (MM/YY)</label>
+                                <input type="text" id="card-expiry" value="12/28" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="card-cvc" class="block text-sm font-medium text-gray-700">CVC</label>
+                                <input type="text" id="card-cvc" value="123" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full flex justify-center items-center px-6 py-4 text-base font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 transition">
+                        Pay Now (Simulated)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!--   6. Confirmation Page      -->
+        <!-- ================================== -->
+        <div id="page-confirmation" class="page-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 max-w-2xl mx-auto text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <svg class="w-10 h-10 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mt-6 mb-4">Booking Confirmed!</h1>
+                <p class="text-lg text-gray-600 mb-6">Your ticket has been successfully booked.</p>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-left mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-gray-600">PNR Number:</span>
+                        <span id="confirmation-pnr" class="text-xl font-bold text-indigo-700">654-3219870</span>
+                    </div>
+                    <div id="confirmation-journey-summary" class="mb-4"></div>
+                    <div id="confirmation-passenger-summary"></div>
+                </div>
+                <button id="confirmation-home-btn" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                    Book Another Ticket
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-auto border-t border-gray-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center">
+            <p class="text-sm text-gray-500">&copy; 2025 TrainTrack. All rights reserved. A C++ OOP Project.</p>
+        </div>
+    </footer>
+
+    <!-- Station Datalist (All HTML) -->
+    <datalist id="station-list">
+        <option value="New Delhi (NDLS)">
+        <option value="Mumbai (CST)">
+        <option value="Kolkata (HWH)">
+        <option value="Chennai (MAS)">
+        <option value="Bangalore (SBC)">
+        <option value="Hyderabad (SC)">
+        <option value="Pune (PUNE)">
+        <option value="Ahmedabad (ADI)">
+        <option value="Jaipur (JP)">
+        <option value="Lucknow (LKO)">
+        <option value="Bhopal (BPL)">
+        <option value="Indore (INDB)">
+        <option value="Patna (PNBE)">
+        <option value="Ranchi (RNC)">
+        <option value="Bhubaneswar (BBS)">
+        <option value="Guwahati (GHY)">
+        <option value="Thiruvananthapuram (TVC)">
+        <option value="Kochi (ERN)">
+        <option value="Goa (MAO)">
+        <option value="Nagpur (NGP)">
+        <option value="Visakhapatnam (VSKP)">
+        <option value="Amritsar (ASR)">
+        <option value="Chandigarh (CDG)">
+        <option value="Shimla (SML)">
+        <option value="Dehradun (DDN)">
+        <option value="Haridwar (HW)">
+        <option value="Varanasi (BSB)">
+        <option value="Agra (AGC)">
+        <option value="Udaipur (UDZ)">
+        <option value="Jodhpur (JU)">
+        <option value="Mysore (MYS)">
+        <option value="Coimbatore (CBE)">
+        <option value="Madurai (MDU)">
+        <option value="Puri (PURI)">
+        <option value="Jammu (JAT)">
+        <option value="Srinagar (SINA)">
+        <option value="New Jalpaiguri (NJP)">
+        <option value="Siliguri (SGUJ)">
+        <option value="Tirupati (TPTY)">
+        <option value="Kanyakumari (CAPE)">
+        <option value="Rameswaram (RMM)">
+        <option value="Aurangabad (AWB)">
+        <option value="Nashik (NK)">
+        <option value="Vadodara (BRC)">
+        <option value="Surat (ST)">
+        <option value="Rajkot (RJT)">
+        <option value="Kanpur (CNB)">
+        <option value="Allahabad (PRYJ)">
+        <option value="Gorakhpur (GKP)">
+        <option value="Jabalpur (JBP)">
+        <option value="Raipur (R)">
+        <option value="Bilaspur (BSP)">
+        <option value="Asansol (ASN)">
+        <option value="Dhanbad (DHN)">
+        <option value="Jamshedpur (TATA)">
+        <option value="Vijayawada (BZA)">
+        <option value="Guntur (GNT)">
+        <option value="Kozhikode (CLT)">
+        <option value="Mangalore (MAQ)">
+        <option value="Hubli (UBL)">
+        <option value="Gwalior (GWL)">
+        <option value="Mathura (MTJ)">
+        <option value="Bikaner (BKN)">
+        <option value="Ajmer (AII)">
+        <option value="Kota (KOTA)">
+        <option value="Solapur (SUR)">
+        <option value="Kolhapur (KOP)">
+    </datalist>
+
+    <!-- Modal Overlay (for Login/Register/Gemini/Sidebar) -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" aria-hidden="true"></div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-login-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Welcome Back!</h2>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="login-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    Log In
+                </button>
+                <p class="text-sm text-center text-gray-500">
+                    Don't have an account? <a href="#" id="show-register-from-login" class="font-medium text-indigo-600 hover:underline">Register here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-register-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Create Your Account</h2>
+            <form id="register-form" class="space-y-6">
+                <div>
+                    <label for="register-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="register-name" placeholder="John Doe" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="register-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="register-password" placeholder="Create a strong password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gemini API Modal -->
+    <div id="gemini-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-xl border border-gray-200 relative">
+            <button id="close-gemini-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 id="gemini-modal-title" class="text-2xl font-bold text-center text-gray-900 mb-6">Trip Planner</h2>
+            <div id="gemini-loading" class="text-center py-12 hidden">
+                <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600">Generating your itinerary...</p>
+            </div>
+            <div id="gemini-content" class="prose prose-indigo max-w-none"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar-menu" class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform translate-x-full">
+        <div class="flex justify-between items-center p-4 border-b border-gray-200">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">My Account</h2>
+                <p id="sidebar-user-email" class="text-sm text-gray-600">demo@user.com</p>
+            </div>
+            <button id="close-sidebar-btn" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <nav class="p-4 space-y-2">
+            <a href="#" id="sidebar-link-profile" class="sidebar-nav-link flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" /></svg>
+                My Profile
+            </a>
+            <a href="#" id="sidebar-link-bookings" class="sidebar-nav-link flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-7.5 0h7.5m-7.5 0h7.5m2.25-4.5h.008m-.008 0h.008m-.008 0h.008m.75-1.5h.008m-.008 0h.008m-.008 0h.008M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                My Bookings
+            </a>
+        </nav>
+        <div class="p-4 absolute bottom-0 w-full border-t border-gray-200">
+            <button id="sidebar-logout-btn" class="w-full flex items-center justify-center px-4 py-3 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
+                Logout
+            </button>
+        </div>
+    </div>
+    
+    <!-- 4. All JavaScript -->
+    <script type="module">
+        // =================================================================================
+        // 1. FIREBASE & GEMINI SDK IMPORTS
+        // =================================================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            addDoc, 
+            setDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            collection, 
+            query, 
+            where, 
+            getDocs,
+            setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =================================================================================
+        // 2. CONFIGURATION & APP STATE
+        // =================================================================================
+
+        // --- Firebase Config ---
+        // !! FIX: Check if variables exist. If not, create an empty config. !!
+        const firebaseConfig = JSON.parse(
+            typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey": "YOUR_API_KEY", "authDomain": "YOUR_AUTH_DOMAIN", "projectId": "YOUR_PROJECT_ID"}'
+        );
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        // --- Gemini API Config ---
+        const GEMINI_API_KEY = ""; // Kept as empty string per instructions
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+        const CXX_BACKEND_URL = "http://localhost:18080/api/search";
+
+        // --- App State ---
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let unsubscribeBookings = null;
+        let currentBooking = {
+            train: null,
+            passengers: [],
+            selectedClass: null,
+            totalFare: 0
+        };
+
+        // --- Mock Train Data (for local fallback) ---
+        const masterTrainList = [
+            { "trainNumber": "12001", "trainName": "Shatabdi Express", "from": "New Delhi (NDLS)", "to": "Bhopal (BPL)", "departureTime": "06:00", "arrivalTime": "14:05", "duration": "8h 5m", "availability": [ {"class": "CC", "status": "AVL 50", "price": 1800}, {"class": "EC", "status": "AVL 10", "price": 3200} ] },
+            { "trainNumber": "12951", "trainName": "Mumbai Rajdhani", "from": "Mumbai (CST)", "to": "New Delhi (NDLS)", "departureTime": "17:00", "arrivalTime": "08:35", "duration": "15h 35m", "availability": [ {"class": "3A", "status": "AVL 22", "price": 2500}, {"class": "2A", "status": "AVL 8", "price": 3500}, {"class": "1A", "status": "WL 2", "price": 4800} ] },
+            { "trainNumber": "12301", "trainName": "Howrah Rajdhani", "from": "Kolkata (HWH)", "to": "New Delhi (NDLS)", "departureTime": "16:50", "arrivalTime": "09:55", "duration": "17h 5m", "availability": [ {"class": "3A", "status": "AVL 105", "price": 2700}, {"class": "2A", "status": "AVL 30", "price": 3800}, {"class": "1A", "status": "AVL 12", "price": 5200} ] },
+            { "trainNumber": "12424", "trainName": "Dibrugarh Rajdhani", "from": "New Delhi (NDLS)", "to": "Guwahati (GHY)", "departureTime": "16:20", "arrivalTime": "20:50", "duration": "28h 30m", "availability": [ {"class": "3A", "status": "AVL 40", "price": 3100}, {"class": "2A", "status": "AVL 15", "price": 4200} ] },
+            { "trainNumber": "22691", "trainName": "Bengaluru Rajdhani", "from": "Bangalore (SBC)", "to": "New Delhi (NDLS)", "departureTime": "20:00", "arrivalTime": "05:50", "duration": "33h 50m", "availability": [ {"class": "3A", "status": "AVL 75", "price": 3400}, {"class": "2A", "status": "AVL 20", "price": 4600}, {"class": "1A", "status": "AVL 5", "price": 6200} ] },
+            { "trainNumber": "12259", "trainName": "Duronto Express", "from": "Kolkata (HWH)", "to": "Chennai (MAS)", "departureTime": "17:00", "arrivalTime": "20:10", "duration": "27h 10m", "availability": [ {"class": "SL", "status": "AVL 150", "price": 1200}, {"class": "3A", "status": "AVL 60", "price": 2800}, {"class": "2A", "status": "RAC 10", "price": 3900} ] },
+            { "trainNumber": "12137", "trainName": "Punjab Mail", "from": "Mumbai (CST)", "to": "Amritsar (ASR)", "departureTime": "19:35", "arrivalTime": "05:05", "duration": "33h 30m", "availability": [ {"class": "SL", "status": "WL 20", "price": 900}, {"class": "3A", "status": "AVL 30", "price": 2300} ] },
+            { "trainNumber": "12723", "trainName": "Telangana Express", "from": "Hyderabad (SC)", "to": "New Delhi (NDLS)", "departureTime": "06:00", "arrivalTime": "07:40", "duration": "25h 40m", "availability": [ {"class": "SL", "status": "AVL 200", "price": 1000}, {"class": "3A", "status": "AVL 80", "price": 2600}, {"class": "2A", "status": "AVL 25", "price": 3700} ] },
+            { "trainNumber": "12861", "trainName": "Coromandel Express", "from": "Kolkata (HWH)", "to": "Chennai (MAS)", "departureTime": "14:50", "arrivalTime": "17:15", "duration": "26h 25m", "availability": [ {"class": "SL", "status": "AVL 110", "price": 1150}, {"class": "3A", "status": "AVL 50", "price": 2700} ] },
+            { "trainNumber": "12625", "trainName": "Kerala Express", "from": "New Delhi (NDLS)", "to": "Thiruvananthapuram (TVC)", "departureTime": "11:00", "arrivalTime": "13:30", "duration": "50h 30m", "availability": [ {"class": "SL", "status": "AVL 90", "price": 1400}, {"class": "3A", "status": "AVL 40", "price": 3500} ] },
+            { "trainNumber": "12903", "trainName": "Golden Temple Mail", "from": "Mumbai (CST)", "to": "Amritsar (ASR)", "departureTime": "18:45", "arrivalTime": "23:35", "duration": "28h 50m", "availability": [ {"class": "SL", "status": "RAC 15", "price": 950}, {"class": "3A", "status": "AVL 18", "price": 2400}, {"class": "2A", "status": "AVL 10", "price": 3400} ] },
+            { "trainNumber": "12321", "trainName": "HWH-Mumbai Mail", "from": "Kolkata (HWH)", "to": "Mumbai (CST)", "departureTime": "23:35", "arrivalTime": "13:15", "duration": "37h 40m", "availability": [ {"class": "SL", "status": "AVL 210", "price": 1100}, {"class": "3A", "status": "AVL 70", "price": 2800} ] },
+            { "trainNumber": "12471", "trainName": "Swaraj Express", "from": "Mumbai (CST)", "to": "Jammu (JAT)", "departureTime": "11:00", "arrivalTime": "17:15", "duration": "30h 15m", "availability": [ {"class": "SL", "status": "AVL 130", "price": 1050}, {"class": "3A", "status": "AVL 45", "price": 2700} ] },
+            { "trainNumber": "12565", "trainName": "Bihar Sampark Kranti", "from": "Patna (PNBE)", "to": "New Delhi (NDLS)", "departureTime": "11:00", "arrivalTime": "05:00", "duration": "18h 0m", "availability": [ {"class": "SL", "status": "AVL 300", "price": 700}, {"class": "3A", "status": "AVL 120", "price": 1800} ] },
+            { "trainNumber": "12715", "trainName": "Sachkhand Express", "from": "Amritsar (ASR)", "to": "Pune (PUNE)", "departureTime": "05:30", "arrivalTime": "21:00", "duration": "39h 30m", "availability": [ {"class": "SL", "status": "AVL 80", "price": 1200}, {"class": "3A", "status": "AVL 30", "price": 3000} ] },
+            { "trainNumber": "12801", "trainName": "Purushottam Express", "from": "Puri (PURI)", "to": "New Delhi (NDLS)", "departureTime": "21:45", "arrivalTime": "04:00", "duration": "30h 15m", "availability": [ {"class": "SL", "status": "AVL 160", "price": 1100}, {"class": "3A", "status": "AVL 60", "price": 2800}, {"class": "2A", "status": "AVL 20", "price": 3900} ] },
+            { "trainNumber": "12313", "trainName": "Sealdah Rajdhani", "from": "Kolkata (HWH)", "to": "New Delhi (NDLS)", "departureTime": "16:50", "arrivalTime": "10:05", "duration": "17h 15m", "availability": [ {"class": "3A", "status": "AVL 90", "price": 2750}, {"class": "2A", "status": "AVL 25", "price": 3850}, {"class": "1A", "status": "AVL 10", "price": 5300} ] },
+            { "trainNumber": "12393", "trainName": "Sampoorna Kranti", "from": "Patna (PNBE)", "to": "New Delhi (NDLS)", "departureTime": "19:25", "arrivalTime": "07:55", "duration": "12h 30m", "availability": [ {"class": "SL", "status": "AVL 250", "price": 750}, {"class": "3A", "status": "AVL 110", "price": 1900}, {"class": "2A", "status": "AVL 40", "price": 2700} ] },
+            { "trainNumber": "12953", "trainName": "August Kranti Rajdhani", "from": "Mumbai (CST)", "to": "New Delhi (NDLS)", "departureTime": "17:10", "arrivalTime": "09:43", "duration": "16h 33m", "availability": [ {"class": "3A", "status": "AVL 60", "price": 2550}, {"class": "2A", "status": "AVL 20", "price": 3550}, {"class": "1A", "status": "AVL 8", "price": 4900} ] },
+            { "trainNumber": "12273", "trainName": "Howrah Duronto", "from": "New Delhi (NDLS)", "to": "Kolkata (HWH)", "departureTime": "12:40", "arrivalTime": "10:35", "duration": "21h 55m", "availability": [ {"class": "SL", "status": "AVL 180", "price": 1150}, {"class": "3A", "status": "AVL 70", "price": 2850}, {"class": "2A", "status": "AVL 30", "price": 4000} ] },
+            { "trainNumber": "12431", "trainName": "Trivandrum Rajdhani", "from": "New Delhi (NDLS)", "to": "Kochi (ERN)", "departureTime": "06:16", "arrivalTime": "10:55", "duration": "40h 39m", "availability": [ {"class": "3A", "status": "AVL 50", "price": 3800}, {"class": "2A", "status": "AVL 15", "price": 5200}, {"class": "1A", "status": "AVL 4", "price": 7100} ] },
+            { "trainNumber": "12415", "trainName": "Intercity Express", "from": "New Delhi (NDLS)", "to": "Ajmer (AII)", "departureTime": "06:10", "arrivalTime": "12:55", "duration": "6h 45m", "availability": [ {"class": "CC", "status": "AVL 120", "price": 700}, {"class": "2S", "status": "AVL 200", "price": 250} ] },
+            { "trainNumber": "12002", "trainName": "Shatabdi Express", "from": "Bhopal (BPL)", "to": "New Delhi (NDLS)", "departureTime": "14:40", "arrivalTime": "22:50", "duration": "8h 10m", "availability": [ {"class": "CC", "status": "AVL 60", "price": 1800}, {"class": "EC", "status": "AVL 12", "price": 3200} ] },
+            { "trainNumber": "12263", "trainName": "Pune Duronto", "from": "Pune (PUNE)", "to": "New Delhi (NDLS)", "departureTime": "11:00", "arrivalTime": "06:55", "duration": "19h 55m", "availability": [ {"class": "3A", "status": "AVL 55", "price": 2400}, {"class": "2A", "status": "AVL 22", "price": 3300} ] },
+            { "trainNumber": "12779", "trainName": "Goa Express", "from": "Vasco da Gama (MAO)", "to": "New Delhi (NDLS)", "departureTime": "15:00", "arrivalTime": "06:30", "duration": "39h 30m", "availability": [ {"class": "SL", "status": "AVL 70", "price": 1250}, {"class": "3A", "status": "AVL 30", "price": 3100}, {"class": "2A", "status": "AVL 10", "price": 4200} ] },
+            { "trainNumber": "12451", "trainName": "Shram Shakti Exp", "from": "Kanpur (CNB)", "to": "New Delhi (NDLS)", "departureTime": "23:55", "arrivalTime": "05:50", "duration": "5h 55m", "availability": [ {"class": "SL", "status": "AVL 150", "price": 400}, {"class": "3A", "status": "AVL 60", "price": 1100} ] },
+            { "trainNumber": "12367", "trainName": "Vikramshila Express", "from": "Patna (PNBE)", "to": "New Delhi (NDLS)", "departureTime": "17:05", "arrivalTime": "12:00", "duration": "18h 55m", "availability": [ {"class": "SL", "status": "AVL 220", "price": 720}, {"class": "3A", "status": "AVL 80", "price": 1850} ] },
+            { "trainNumber": "12559", "trainName": "Shiv Ganga Express", "from": "Varanasi (BSB)", "to": "New Delhi (NDLS)", "departureTime": "22:15", "arrivalTime": "08:25", "duration": "10h 10m", "availability": [ {"class": "SL", "status": "AVL 100", "price": 600}, {"class":"3A", "status": "AVL 40", "price": 1500}, {"class": "2A", "status": "AVL 15", "price": 2100} ] },
+            { "trainNumber": "12192", "trainName": "Jabalpur SF Express", "from": "Jabalpur (JBP)", "to": "New Delhi (NDLS)", "departureTime": "17:45", "arrivalTime": "07:55", "duration": "14h 10m", "availability": [ {"class": "SL", "status": "AVL 140", "price": 700}, {"class": "3A", "status": "AVL 50", "price": 1800} ] },
+            { "trainNumber": "12155", "trainName": "Bhopal Express", "from": "Bhopal (BPL)", "to": "New Delhi (NDLS)", "departureTime": "22:40", "arrivalTime": "07:50", "duration": "9h 10m", "availability": [ {"class": "SL", "status": "AVL 90", "price": 650}, {"class": "3A", "status": "AVL 30", "price": 1600}, {"class": "2A", "status": "AVL 10", "price": 2200} ] },
+            { "trainNumber": "12915", "trainName": "Ashram Express", "from": "Ahmedabad (ADI)", "to": "New Delhi (NDLS)", "departureTime": "19:00", "arrivalTime": "09:55", "duration": "14h 55m", "availability": [ {"class": "SL", "status": "AVL 110", "price": 680}, {"class": "3A", "status": "AVL 40", "price": 1750} ] },
+            { "trainNumber": "12925", "trainName": "Paschim Express", "from": "Mumbai (CST)", "to": "Amritsar (ASR)", "departureTime": "11:25", "arrivalTime": "19:20", "duration": "31h 55m", "availability": [ {"class": "SL", "status": "AVL 180", "price": 980}, {"class": "3A", "status": "AVL 60", "price": 2500} ] },
+            { "trainNumber": "12449", "trainName": "Goa Sampark Kranti", "from": "Goa (MAO)", "to": "New Delhi (NDLS)", "departureTime": "12:30", "arrivalTime": "18:05", "duration": "29h 35m", "availability": [ {"class": "SL", "status": "AVL 100", "price": 1200}, {"class": "3A", "status": "AVL 35", "price": 3000} ] },
+            { "trainNumber": "12721", "trainName": "Dakshin Express", "from": "Hyderabad (SC)", "to": "New Delhi (NDLS)", "departureTime": "22:50", "arrivalTime": "03:40", "duration": "28h 50m", "availability": [ {"class": "SL", "status": "AVL 130", "price": 1050}, {"class": "3A", "status": "AVL 50", "price": 2700} ] },
+            { "trainNumber": "12483", "trainName": "Kochuveli Express", "from": "Kochi (ERN)", "to": "Amritsar (ASR)", "departureTime": "10:50", "arrivalTime": "13:50", "duration": "51h 0m", "availability": [ {"class": "SL", "status": "AVL 60", "price": 1600}, {"class": "3A", "status": "AVL 20", "price": 4000} ] },
+            { "trainNumber": "12617", "trainName": "Mangala Lakshadweep", "from": "Kochi (ERN)", "to": "New Delhi (NDLS)", "departureTime": "13:25", "arrivalTime": "13:35", "duration": "48h 10m", "availability": [ {"class": "SL", "status": "AVL 80", "price": 1500}, {"class": "3A", "status": "AVL 25", "price": 3800} ] },
+            { "trainNumber": "12141", "trainName": "LTT-Patliputra Express", "from": "Mumbai (CST)", "to": "Patna (PNBE)", "departureTime": "23:35", "arrivalTime": "03:50", "duration": "28h 15m", "availability": [ {"class": "SL", "status": "AVL 190", "price": 950}, {"class": "3A", "status": "AVL 70", "price": 2400} ] },
+            { "trainNumber": "12397", "trainName": "Mahabodhi Express", "from": "New Delhi (NDLS)", "to": "Patna (PNBE)", "departureTime": "12:50", "arrivalTime": "02:55", "duration": "14h 5m", "availability": [ {"class": "SL", "status": "AVL 240", "price": 710}, {"class": "3A", "status": "AVL 100", "price": 1820} ] },
+            { "trainNumber": "12401", "trainName": "Magadh Express", "from": "New Delhi (NDLS)", "to": "Patna (PNBE)", "departureTime": "20:00", "arrivalTime": "11:35", "duration": "15h 35m", "availability": [ {"class": "SL", "status": "AVL 300", "price": 700}, {"class": "3A", "status": "AVL 120", "price": 1800} ] },
+            { "trainNumber": "12171", "trainName": "LTT-Haridwar Express", "from": "Mumbai (CST)", "to": "Haridwar (HW)", "departureTime": "07:55", "arrivalTime": "12:55", "duration": "29h 0m", "availability": [ {"class": "SL", "status": "AVL 100", "price": 960}, {"class": "3A", "status": "AVL 40", "price": 2450} ] },
+            { "trainNumber": "12957", "trainName": "Swarna Jayanti Rajdhani", "from": "Ahmedabad (ADI)", "to": "New Delhi (NDLS)", "departureTime": "17:40", "arrivalTime": "07:30", "duration": "13h 50m", "availability": [ {"class": "3A", "status": "AVL 65", "price": 1900}, {"class": "2A", "status": "AVL 25", "price": 2700}, {"class": "1A", "status": "AVL 8", "price": 3800} ] },
+            { "trainNumber": "12413", "trainName": "Ajmer-Jammu Express", "from": "Ajmer (AII)", "to": "Jammu (JAT)", "departureTime": "14:15", "arrivalTime": "08:11", "duration": "18h 0m", "availability": [ {"class": "SL", "status": "AVL 130", "price": 650}, {"class": "3A", "status": "AVL 50", "price": 1700} ] },
+            { "trainNumber": "12381", "trainName": "Poorva Express", "from": "Kolkata (HWH)", "to": "New Delhi (NDLS)", "departureTime": "08:11", "arrivalTime": "06:00", "duration": "21h 45m", "availability": [ {"class": "SL", "status": "AVL 170", "price": 900}, {"class":"3A", "status": "AVL 70", "price": 2300}, {"class": "2A", "status": "AVL 25", "price": 3300} ] },
+            { "trainNumber": "12249", "trainName": "Bengaluru Duronto", "from": "Bangalore (SBC)", "to": "New Delhi (NDLS)", "departureTime": "23:00", "arrivalTime": "07:00", "duration": "32h 0m", "availability": [ {"class": "3A", "status": "AVL 50", "price": 3300}, {"class": "2A", "status": "AVL 20", "price": 4500}, {"class": "1A", "status": "AVL 6", "price": 6100} ] },
+            { "trainNumber": "12964", "trainName": "Mewar Express", "from": "Udaipur (UDZ)", "to": "New Delhi (NDLS)", "departureTime": "18:30", "arrivalTime": "06:35", "duration": "12h 5m", "availability": [ {"class": "SL", "status": "AVL 120", "price": 550}, {"class": "3A", "status": "AVL 40", "price": 1400}, {"class": "2A", "status": "AVL 15", "price": 1900} ] },
+            { "trainNumber": "12149", "trainName": "Pune-Patna Express", "from": "Pune (PUNE)", "to": "Patna (PNBE)", "departureTime": "21:05", "arrivalTime": "03:50", "duration": "30h 45m", "availability": [ {"class": "SL", "status": "AVL 160", "price": 920}, {"class": "3A", "status": "AVL 60", "price": 2400} ] },
+            { "trainNumber": "12707", "trainName": "Andhra Pradesh SF", "from": "Visakhapatnam (VSKP)", "to": "New Delhi (NDLS)", "departureTime": "09:30", "arrivalTime": "19:00", "duration": "33h 30m", "availability": [ {"class": "SL", "status": "AVL 100", "price": 1150}, {"class": "3A", "status": "AVL 40", "price": 2900} ] },
+            { "trainNumber": "12409", "trainName": "Gondwana Express", "from": "Bilaspur (BSP)", "to": "New Delhi (NDLS)", "departureTime": "14:10", "arrivalTime": "12:30", "duration": "22h 20m", "availability": [ {"class": "SL", "status": "AVL 110", "price": 800}, {"class": "3A", "status": "AVL 45", "price": 2000} ] },
+            { "trainNumber": "12189", "trainName": "Mahakoshal Express", "from": "Jabalpur (JBP)", "to": "New Delhi (NDLS)", "departureTime": "18:10", "arrivalTime": "11:10", "duration": "17h 0m", "availability": [ {"class": "SL", "status": "AVL 150", "price": 720}, {"class": "3A", "status": "AVL 55", "price": 1850} ] },
+            { "trainNumber": "12627", "trainName": "Karnataka Express", "from": "Bangalore (SBC)", "to": "New Delhi (NDLS)", "departureTime": "19:20", "arrivalTime": "09:00", "duration": "37h 40m", "availability": [ {"class": "SL", "status": "AVL 130", "price": 1300}, {"class": "3A", "status": "AVL 50", "price": 3300}, {"class": "2A", "status": "AVL 20", "price": 4500} ] },
+            { "trainNumber": "12877", "trainName": "Ranchi Garib Rath", "from": "Ranchi (RNC)", "to": "New Delhi (NDLS)", "departureTime": "16:25", "arrivalTime": "11:10", "duration": "18h 45m", "availability": [ {"class": "3A", "status": "AVL 200", "price": 1200} ] }
+        ];
+
+        // =================================================================================
+        // 3. PAGE & MODAL CONTROLS
+        // =================================================================================
+
+        // --- Page Navigation ---
+        const pages = document.querySelectorAll('.page-content');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sidebarLinks = document.querySelectorAll('.sidebar-nav-link');
+
+        function showPage(pageId) {
+            // Hide all pages
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            // Show the target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+                window.scrollTo(0, 0); // Scroll to top
+            }
+
+            // Update nav link active state
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.id === `nav-${pageId.split('-')[1]}`) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // If it's a sidebar link, also close the sidebar
+            closeSidebar();
+        }
+
+        // --- Modal Controls ---
+        const modalOverlay = document.getElementById('modal-overlay');
+        const loginModal = document.getElementById('login-modal');
+        const registerModal = document.getElementById('register-modal');
+        const geminiModal = document.getElementById('gemini-modal');
+        
+        function openModal(modal) {
+            modalOverlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal(modal) {
+            modalOverlay.classList.add('hidden');
+            modal.classList.add('hidden');
+        }
+
+        // --- Sidebar Controls ---
+        const sidebar = document.getElementById('sidebar-menu');
+        
+        function openSidebar() {
+            modalOverlay.classList.remove('hidden');
+            sidebar.classList.add('open');
+        }
+
+        function closeSidebar() {
+            modalOverlay.classList.add('hidden');
+            sidebar.classList.remove('open');
+        }
+
+        // =================================================================================
+        // 4. FIREBASE AUTHENTICATION & INITIALIZATION
+        // =================================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeAppCore();
+            setupEventListeners();
+        });
+
+        async function initializeAppCore() {
+            try {
+                // !! FIX: Check if the config is just a placeholder !!
+                if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    console.warn("Firebase config is missing or is a placeholder. App will run in anonymous mode without a database.");
+                    // Initialize a MOCK app just to let the code run
+                    initializeApp({ apiKey: "mock", authDomain: "mock.firebaseapp.com", projectId: "mock" });
+                    auth = getAuth();
+                    await signInAnonymously(auth); // Sign in anonymously
+                    
+                    // Set db to null so we don't try to use it
+                    db = null; 
+                    console.warn("Database (db) is null. Bookings will not be saved.");
+                    showAppInitializationError("App is in offline mode. Bookings will not be saved.");
+
+                } else {
+                    // Config IS present, initialize Firebase normally
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    setLogLevel('Debug'); // Enable Firestore logging
+
+                    // Sign in with token if available, otherwise anonymously
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                }
+
+                // Auth state listener
+                onAuthStateChanged(auth, (user) => {
+                    if (user && !user.isAnonymous) {
+                        // User is signed in
+                        userId = user.uid;
+                        updateUIForLoggedInUser(user);
+                        attachBookingsListener(user.uid);
+                    } else {
+                        // User is anonymous or logged out
+                        userId = null;
+                        updateUIForLoggedOutUser();
+                        if (unsubscribeBookings) unsubscribeBookings();
+                        displayUserBookings([]); // Clear bookings
+                    }
+                });
+
+            } catch (error) {
+                console.error("Critical Error initializing app:", error);
+                showAppInitializationError("Could not initialize the application. Please Refresh.");
+            }
+        }
+
+        function updateUIForLoggedInUser(user) {
+            document.getElementById('auth-buttons').classList.add('hidden');
+            document.getElementById('profile-menu').classList.remove('hidden');
+            document.getElementById('sidebar-user-email').textContent = user.email || 'Welcome!';
+            
+            // Pre-fill profile page
+            document.getElementById('profile-email').value = user.email || '';
+            document.getElementById('profile-name').value = user.displayName || '';
+            // Note: Phone number isn't a default field, would need separate logic
+        }
+
+        function updateUIForLoggedOutUser() {
+            document.getElementById('auth-buttons').classList.remove('hidden');
+            document.getElementById('profile-menu').classList.add('hidden');
+            document.getElementById('sidebar-user-email').textContent = 'Not logged in';
+            closeSidebar();
+            showPage('page-search'); // Go to home on logout
+        }
+
+        function showAppInitializationError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+        }
+
+        // =================================================================================
+        // 5. EVENT LISTENER SETUP
+        // =================================================================================
+
+        function setupEventListeners() {
+            // --- Navigation ---
+            document.getElementById('logo-home-link').addEventListener('click', (e) => { e.preventDefault(); showPage('page-search'); });
+            document.getElementById('nav-search').addEventListener('click', (e) => { e.preventDefault(); showPage('page-search'); });
+            
+            // --- Modals ---
+            document.getElementById('login-btn').addEventListener('click', () => openModal(loginModal));
+            document.getElementById('register-btn').addEventListener('click', () => openModal(registerModal));
+            document.getElementById('close-login-modal').addEventListener('click', () => closeModal(loginModal));
+            document.getElementById('close-register-modal').addEventListener('click', () => closeModal(registerModal));
+            document.getElementById('close-gemini-modal').addEventListener('click', () => closeModal(geminiModal));
+            modalOverlay.addEventListener('click', () => {
+                closeModal(loginModal);
+                closeModal(registerModal);
+                closeModal(geminiModal);
+                closeSidebar();
+            });
+            document.getElementById('show-register-from-login').addEventListener('click', (e) => {
+                e.preventDefault();
+                closeModal(loginModal);
+                openModal(registerModal);
+            });
+
+            // --- Sidebar ---
+            document.getElementById('profile-badge-btn').addEventListener('click', openSidebar);
+            document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
+            document.getElementById('sidebar-link-profile').addEventListener('click', (e) => { e.preventDefault(); showPage('page-profile'); });
+            document.getElementById('sidebar-link-bookings').addEventListener('click', (e) => { e.preventDefault(); showPage('page-bookings'); });
+            document.getElementById('sidebar-logout-btn').addEventListener('click', handleLogout);
+            
+            // --- Booking Flow ---
+            document.getElementById('search-form').addEventListener('submit', handleTrainSearch);
+            document.getElementById('results-back-btn').addEventListener('click', () => showPage('page-search'));
+            document.getElementById('add-passenger-form').addEventListener('submit', handleAddPassenger);
+            document.getElementById('passenger-back-btn').addEventListener('click', () => showPage('page-search-results'));
+            document.getElementById('passenger-proceed-btn').addEventListener('click', () => showPage('page-payment'));
+            document.getElementById('payment-form').addEventListener('submit', handlePayment);
+            document.getElementById('confirmation-home-btn').addEventListener('click', () => showPage('page-search'));
+
+            // --- Auth Forms ---
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            
+            // --- Profile ---
+            document.getElementById('profile-view-bookings').addEventListener('click', (e) => { e.preventDefault(); showPage('page-bookings'); });
+            document.getElementById('profile-form').addEventListener('submit', handleProfileUpdate);
+            
+            // --- Gemini ---
+            document.getElementById('get-inspiration-btn').addEventListener('click', handleGetInspiration);
+
+            // --- Date Picker ---
+            setDateRange();
+        }
+
+        // =================================================================================
+        // 6. DATE & UTILITIES
+        // =================================================================================
+
+        function setDateRange() {
+            const dateInput = document.getElementById('journey-date');
+            const today = new Date();
+            const maxDate = new Date();
+            maxDate.setDate(today.getDate() + 60);
+
+            const formatDate = (date) => date.toISOString().split('T')[0];
+            
+            dateInput.value = formatDate(today);
+            dateInput.min = formatDate(today);
+            dateInput.max = formatDate(maxDate);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
+        }
+
+        // NEW: Helper function to get a berth type based on a seat number
+        function getBerthType(seatNumber, coachClass) {
+            if (coachClass === '2A' || coachClass === '1A' || coachClass === 'CC' || coachClass === 'EC') {
+                const berths = ["Lower", "Upper", "Lower", "Upper", "Side Lower", "Side Upper"];
+                return berths[seatNumber % 6];
+            }
+            // Default to SL/3A layout
+            const berths = ["Lower", "Middle", "Upper", "Lower", "Middle", "Upper", "Side Lower", "Side Upper"];
+            return berths[seatNumber % 8];
+        }
+
+        // NEW: Function to simulate seat assignment
+        function assignSeats(passengers, coachClass) {
+            // Generate a random coach
+            // FIX: Corrected the broken line
+            const coachPrefix = coachClass === 'SL' ? 'S' : (coachClass === '3A' ? 'B' : (coachClass === '2A' ? 'A' : 'H'));
+            const coachNumber = Math.floor(Math.random() * 5) + 2; // e.g., B2, S5
+            
+            // Start from a random seat number
+            let currentSeat = Math.floor(Math.random() * 40) + 1; 
+
+            return passengers.map(p => {
+                const seatNumber = currentSeat++;
+                const assignedSeat = `${coachPrefix}${coachNumber}-${seatNumber}`;
+                const assignedBerth = getBerthType(seatNumber, coachClass);
+                
+                // Return a new object with the assigned seat, merging old passenger data
+                return {
+                    ...p, // name, age, gender, berth (preference)
+                    assignedSeat: assignedSeat,
+                    assignedBerth: assignedBerth
+                };
+            });
+        }
+
+        // =================================================================================
+        // 7. AUTHENTICATION HANDLERS
+        // =================================================================================
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                closeModal(loginModal);
+            } catch (error) {
+                alert(`Login Failed: ${error.message}`);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await updateProfile(userCredential.user, { displayName: name });
+                closeModal(registerModal);
+            } catch (error) {
+                alert(`Registration Failed: ${error.message}`);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                await signInAnonymously(auth); // Sign back in anonymously
+                updateUIForLoggedOutUser();
+            } catch (error) {
+                console.error("Logout Failed:", error);
+            }
+        }
+        
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            alert("Profile update is not implemented in this demo.");
+            // To implement:
+            // 1. Get new name, phone (if changed)
+            // 2. await updateProfile(auth.currentUser, { displayName: newName });
+            // 3. If password, await updatePassword(auth.currentUser, newPassword);
+            // 4. If phone, await updatePhoneNumber(...)
+        }
+
+        // =================================================================================
+        // 8. BOOKING FLOW
+        // =================================================================================
+
+        // NEW HELPER FUNCTION for local mock data
+        function getRandomTrainsFromMock(from, to) {
+            // Shuffles and picks 3-5 trains from the master list
+            let shuffled = [...masterTrainList].sort(() => 0.5 - Math.random());
+            let count = 3 + Math.floor(Math.random() * 3);
+            let selected = shuffled.slice(0, count);
+
+            // Map them to the full train object, INJECTING from/to
+            return selected.map(baseTrain => {
+                const times = ["06:00", "08:15", "11:30", "14:05", "17:15", "20:00", "22:45"];
+                const durations = ["6h 00m", "8h 15m", "10h 30m", "12h 45m", "15h 00m"];
+                
+                // NEW: Define the correct sort order
+                const classOrder = {"2S": 0, "SL": 1, "CC": 2, "3A": 3, "2A": 4, "1A": 5, "EC": 6};
+
+                // NEW: Sort the *existing* availability from the master list
+                const sortedAvail = baseTrain.availability.sort((a, b) => {
+                    const orderA = classOrder[a.class] || 99; // Get order, or 99 if unknown
+                    const orderB = classOrder[b.class] || 99;
+                    return orderA - orderB;
+                });
+                
+                return {
+                    ...baseTrain,
+                    from: from, // USE THE SEARCHED VALUE
+                    to: to,     // USE THE SEARCHED VALUE
+                    departureTime: times[Math.floor(Math.random() * times.length)],
+                    arrivalTime: times[Math.floor(Math.random() * times.length)],
+                    duration: durations[Math.floor(Math.random() * durations.length)],
+                    
+                    // UPDATE: Use the new sorted array from the master list, not the old random one
+                    availability: sortedAvail
+                };
+            });
+        }
+
+        async function handleTrainSearch(e) {
+            e.preventDefault();
+            showPage('page-search-results');
+            
+            // GET THE VALUES from the search form
+            const fromValue = document.getElementById('from-station').value || 'New Delhi (NDLS)';
+            const toValue = document.getElementById('to-station').value || 'Mumbai (CST)';
+
+            const resultsContainer = document.getElementById('search-results-container');
+            resultsContainer.innerHTML = `
+                <div class="text-center py-12">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-4 text-gray-600">Searching for trains...</p>
+                </div>`;
+
+            let trainData = [];
+            try {
+                // UPDATE: Build the URL with query parameters
+                const url = `${CXX_BACKEND_URL}?from=${encodeURIComponent(fromValue)}&to=${encodeURIComponent(toValue)}`;
+
+                // Try fetching from C++ backend
+                const response = await fetch(url); // Use the new URL
+                if (!response.ok) {
+                    throw new Error(`C++ backend error: ${response.statusText}`);
+                }
+                const data = await response.json();
+                if (data.status === 'success' && data.trains) {
+                    trainData = data.trains;
+                } else {
+                    throw new Error('Invalid data from C++ backend');
+                }
+            } catch (error) {
+                console.warn(`Could not fetch from C++ backend (${error.message}). Using local mock data.`);
+                
+                // UPDATE: Use the new helper function with the search values
+                trainData = getRandomTrainsFromMock(fromValue, toValue);
+            }
+            
+            displayTrainResults(trainData);
+        }
+
+        function displayTrainResults(trains) {
+            const resultsContainer = document.getElementById('search-results-container');
+            resultsContainer.innerHTML = ''; // Clear loading
+            
+            if (!trains || trains.length === 0) {
+                resultsContainer.innerHTML = '<p class="text-center text-gray-500">No trains found for this route.</p>';
+                return;
+            }
+
+            trains.forEach(train => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6';
+                
+                let availabilityHtml = '';
+                if (train.availability && train.availability.length > 0) {
+                    availabilityHtml = train.availability.map(avail => `
+                        <button class="book-class-btn p-3 text-left bg-gray-50 hover:bg-indigo-50 border border-gray-200 rounded-lg transition"
+                                data-train-number='${train.trainNumber}' 
+                                data-class='${avail.class}' 
+                                data-price='${avail.price}'>
+                            <span class="font-bold text-sm text-indigo-700">${avail.class}</span>
+                            <span class="block text-sm font-semibold ${avail.status.includes('AVL') ? 'text-green-600' : 'text-orange-500'}">${avail.status}</span>
+                            <span class="block text-sm font-medium text-gray-800">${formatCurrency(avail.price)}</span>
+                        </button>
+                    `).join('');
+                } else {
+                    availabilityHtml = '<p class="text-sm text-gray-500">Not Available</p>';
+                }
+
+                card.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">${train.trainName}</h3>
+                                <p class="text-sm text-gray-600">${train.trainNumber}</p>
+                            </div>
+                            <button class="plan-trip-btn mt-4 sm:mt-0 flex items-center px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"
+                                    data-destination="${train.to}">
+                                <span class="text-lg mr-2">✨</span> Plan My Trip
+                            </button>
+                        </div>
+                        <div class="mt-6 flex items-center justify-between text-center">
+                            <div>
+                                <p class="text-lg font-semibold text-gray-800">${train.departureTime}</p>
+                                <p class="text-sm text-gray-600">${train.from}</p>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <p>${train.duration}</p>
+                                <div class="w-24 h-px bg-gray-300 my-1"></div>
+                            </div>
+                            <div>
+                                <p class="text-lg font-semibold text-gray-800">${train.arrivalTime}</p>
+                                <p class="text-sm text-gray-600">${train.to}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50/70 p-4 border-t border-gray-200">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">Book Now:</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            ${availabilityHtml}
+                        </div>
+                    </div>
+                `;
+                resultsContainer.appendChild(card);
+
+                // Add event listeners for the new buttons
+                card.querySelectorAll('.book-class-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const btn = e.currentTarget;
+                        const selectedTrain = trains.find(t => t.trainNumber === btn.dataset.trainNumber);
+                        const selectedClass = btn.dataset.class;
+                        const selectedPrice = parseInt(btn.dataset.price, 10);
+                        
+                        startBookingProcess(selectedTrain, selectedClass, selectedPrice);
+                    });
+                });
+                
+                card.querySelectorAll('.plan-trip-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        handlePlanTrip(e.currentTarget.dataset.destination);
+                    });
+                });
+            });
+        }
+        
+        function startBookingProcess(train, selectedClass, price) {
+            if (!userId) {
+                alert("Please log in to book a ticket.");
+                openModal(loginModal);
+                return;
+            }
+
+            // Reset current booking
+            currentBooking = {
+                train: train,
+                passengers: [],
+                selectedClass: { class: selectedClass, price: price },
+                totalFare: 0
+            };
+
+            // Update Passenger Page Summary
+            const summaryEl = document.getElementById('passenger-journey-summary');
+            summaryEl.innerHTML = `
+                <h3 class="text-lg font-bold text-gray-900">${train.trainName} (${train.trainNumber})</h3>
+                <p class="text-sm text-gray-600">${train.from} &rarr; ${train.to}</p>
+                <p class="text-sm text-gray-600">Booking for: <span class="font-semibold text-indigo-700">${selectedClass}</span></p>
+                <p class="text-sm text-gray-600">Price per passenger: <span class="font-semibold text-gray-800">${formatCurrency(price)}</span></p>
+            `;
+            
+            // Clear old passenger list
+            document.getElementById('passenger-list-container').innerHTML = '';
+            renderPassengerList(); // FIX: Call renderPassengerList to show "No passengers"
+            document.getElementById('passenger-proceed-btn').disabled = true;
+
+            showPage('page-passenger-details');
+        }
+
+        function handleAddPassenger(e) {
+            e.preventDefault();
+            const name = document.getElementById('passenger-name').value;
+            const age = document.getElementById('passenger-age').value;
+            const gender = document.getElementById('passenger-gender').value;
+            const berth = document.getElementById('passenger-berth').value;
+            
+            const passenger = { name, age, gender, berth };
+            currentBooking.passengers.push(passenger);
+            
+            renderPassengerList();
+            
+            // Reset form
+            e.target.reset();
+            
+            // Enable proceed button
+            document.getElementById('passenger-proceed-btn').disabled = false;
+        }
+        
+        // --- NEW FUNCTION TO FIX THE ERROR ---
+        function renderPassengerList() {
+            const container = document.getElementById('passenger-list-container');
+            container.innerHTML = ''; // Clear old list
+            
+            let totalFare = 0;
+            
+            if (currentBooking.passengers.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No passengers added yet.</p>';
+                document.getElementById('passenger-proceed-btn').disabled = true;
+            } else {
+                currentBooking.passengers.forEach((passenger, index) => {
+                    totalFare += currentBooking.selectedClass.price;
+                    
+                    const passengerEl = document.createElement('div');
+                    passengerEl.className = 'flex justify-between items-center bg-white p-4 rounded-lg border border-gray-300 shadow-sm';
+                    passengerEl.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-900">${passenger.name} <span class="text-gray-600">(${passenger.age}, ${passenger.gender})</span></p>
+                            <p class="text-sm text-gray-500">Preference: ${passenger.berth}</p>
+                        </div>
+                        <button class="remove-passenger-btn p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100" data-index="${index}" title="Remove Passenger">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        </button>
+                    `;
+                    container.appendChild(passengerEl);
+                });
+                
+                document.getElementById('passenger-proceed-btn').disabled = false;
+            }
+            
+            // Add event listeners to remove buttons
+            container.querySelectorAll('.remove-passenger-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const indexToRemove = parseInt(e.currentTarget.dataset.index, 10);
+                    currentBooking.passengers.splice(indexToRemove, 1); // Remove passenger from array
+                    renderPassengerList(); // Re-render the list
+                });
+            });
+
+            // Update total fare
+            currentBooking.totalFare = totalFare;
+            
+            // Update payment page details (so it's ready when we navigate)
+            document.getElementById('payment-total-fare').textContent = formatCurrency(totalFare);
+            document.getElementById('payment-journey-summary').innerHTML = `
+                <p class="font-semibold text-gray-800">${currentBooking.train.trainName} (${currentBooking.train.trainNumber})</p>
+                <p class="text-sm text-gray-600">${currentBooking.train.from} &rarr; ${currentBooking.train.to}</p>
+                <p class="text-sm text-gray-600">Class: ${currentBooking.selectedClass.class}</p>
+            `;
+            document.getElementById('payment-passenger-summary').innerHTML = `
+                <p class="font-semibold text-gray-800 mt-2">${currentBooking.passengers.length} Passenger(s)</p>
+                <ul class="list-disc list-inside text-sm text-gray-600">
+                    ${currentBooking.passengers.map(p => `<li>${p.name} (${p.age})</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        async function handlePayment(e) {
+            e.preventDefault();
+            
+            // Check for auth one last time
+            if (!userId) {
+                alert("You have been logged out. Please log in again to complete your booking.");
+                openModal(loginModal);
+                return;
+            }
+            
+            // 1. Generate PNR
+            const pnr = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000000 + Math.random() * 9000000)}`;
+            
+            // NEW: Assign seat numbers and berths to passengers
+            const passengersWithSeats = assignSeats(currentBooking.passengers, currentBooking.selectedClass.class);
+            currentBooking.passengers = passengersWithSeats; // Update the booking with new passenger data
+
+            // Get journey date from search form
+            const dateInput = document.getElementById('journey-date');
+            currentBooking.journeyDate = dateInput.value; // Save the journey date
+            
+            try {
+                // !! FIX: Check if db is available before trying to save !!
+                if (!db) {
+                    console.warn("Database not initialized. Simulating booking save.");
+                    // Simulate a successful booking without saving
+                } else {
+                    // Save to Firestore
+                    const bookingCollectionPath = `artifacts/${appId}/users/${userId}/bookings`;
+                    // Add selectedClass to the booking data
+                    await addDoc(collection(db, bookingCollectionPath), {
+                        ...currentBooking,
+                        pnr: pnr,
+                        bookingDate: new Date().toISOString(),
+                        status: "Confirmed",
+                        userId: userId // Ensure userId is saved
+                    });
+                }
+
+                // 2. Update Confirmation Page
+                document.getElementById('confirmation-pnr').textContent = pnr;
+                document.getElementById('confirmation-journey-summary').innerHTML = `
+                    <p class="font-semibold text-gray-800">${currentBooking.train.trainName} (${currentBooking.train.trainNumber})</p>
+                    <p class="text-sm text-gray-600">${currentBooking.train.from} &rarr; ${currentBooking.train.to}</p>
+                    <p class="text-sm text-gray-600">Date: ${currentBooking.journeyDate}</p>
+                    <p class="text-sm text-gray-600">Class: <span class="font-medium">${currentBooking.selectedClass.class}</span> | Total Fare: <span class="font-medium">${formatCurrency(currentBooking.totalFare)}</span></p>
+                `;
+                document.getElementById('confirmation-passenger-summary').innerHTML = `
+                    <p class="font-semibold text-gray-800 mt-4">${currentBooking.passengers.length} Passenger(s)</p>
+                    <ul class="list-disc list-inside text-sm text-gray-600">
+                        ${currentBooking.passengers.map(p => `<li>${p.name} (${p.age}) - <span class="font-semibold text-indigo-700">${p.assignedSeat} / ${p.assignedBerth}</span></li>`).join('')}
+                    </ul>
+                `;
+                
+                // 3. Go to confirmation page
+                showPage('page-confirmation');
+                
+            } catch (error) {
+                console.error("Error saving booking: ", error);
+                alert("There was an error saving your booking. Please try again.");
+            }
+        }
+
+        // =================================================================================
+        // 9. "MY BOOKINGS" PAGE
+        // =================================================================================
+
+        function attachBookingsListener(uid) {
+            if (unsubscribeBookings) {
+                unsubscribeBookings(); // Detach old listener if exists
+            }
+            
+            // !! FIX: Check if db is available before listening !!
+            if (!db) {
+                console.warn("Database not initialized. Cannot listen for bookings.");
+                displayUserBookings([]); // Display empty bookings
+                return;
+            }
+
+            const bookingCollectionPath = `artifacts/${appId}/users/${uid}/bookings`;
+            const q = query(collection(db, bookingCollectionPath));
+            
+            unsubscribeBookings = onSnapshot(q, (snapshot) => {
+                const bookings = [];
+                snapshot.forEach((doc) => {
+                    bookings.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort by booking date, newest first
+                bookings.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
+                displayUserBookings(bookings);
+            }, (error) => {
+                console.error("Error listening to bookings: ", error);
+                alert("Could not load your bookings.");
+            });
+        }
+        
+        function displayUserBookings(bookings) {
+            const container = document.getElementById('bookings-container');
+            const noBookingsMsg = document.getElementById('no-bookings-message');
+            
+            // Clear old bookings
+            container.innerHTML = '';
+            container.appendChild(noBookingsMsg); // Add the "no bookings" message back
+            
+            if (!bookings || bookings.length === 0) {
+                noBookingsMsg.classList.remove('hidden');
+                return;
+            }
+            
+            noBookingsMsg.classList.add('hidden');
+            
+            bookings.forEach(booking => {
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'bg-white p-6 rounded-lg border border-gray-200 shadow-sm';
+                bookingCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">${booking.train.trainName} <span class="font-normal text-gray-600">(${booking.train.trainNumber})</span></h3>
+                            <p class="text-sm text-gray-600">${booking.train.from} &rarr; ${booking.train.to}</p>
+                        </div>
+                        <div class="mt-2 sm:mt-0 text-left sm:text-right">
+                            <span class="block text-sm text-gray-600">PNR:</span>
+                            <span class="block font-bold text-indigo-700">${booking.pnr}</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500">Journey Date</p>
+                                <p class="font-medium text-gray-800">${booking.journeyDate}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Class</p>
+                                <p class="font-medium text-gray-800">${booking.selectedClass.class}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Passengers</p>
+                                <p class="font-medium text-gray-800">${booking.passengers.length}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Total Fare</p>
+                                <p class="font-medium text-gray-800">${formatCurrency(booking.totalFare)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">Passengers:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-700">
+                                ${booking.passengers.map(p => `<li>${p.name} (${p.age}) - <span class="font-medium">${p.assignedSeat || 'N/A'} / ${p.assignedBerth || 'N/A'}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(bookingCard);
+            });
+        }
+        
+        // =================================================================================
+        // 10. GEMINI API CALLS
+        // =================================================================================
+        
+        async function handleGetInspiration() {
+            const prompt = document.getElementById('inspiration-prompt').value;
+            if (!prompt) {
+                alert("Please enter a description for your ideal trip.");
+                return;
+            }
+            
+            const resultsContainer = document.getElementById('inspiration-results');
+            resultsContainer.innerHTML = `
+                <div class="text-center py-6">
+                    <svg class="animate-spin h-6 w-6 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="mt-3 text-gray-600">Generating ideas...</p>
+                </div>`;
+
+            const systemPrompt = "You are a travel agent specializing in Indian train travel. Suggest 3-5 destinations matching the user's request. For each, provide a brief 1-2 sentence description and mention the main railway station. Format the output as simple HTML with <strong> for station names and <p> for descriptions.";
+            const userQuery = `Suggest train-accessible destinations in India for: "${prompt}"`;
+            
+            try {
+                const result = await callGeminiAPI(userQuery, systemPrompt, true);
+                resultsContainer.innerHTML = result.text;
+            } catch (error) {
+                console.error("Gemini Error:", error);
+                resultsContainer.innerHTML = `<p class="text-red-600">Sorry, I couldn't get any suggestions. Please try again.</p>`;
+            }
+        }
+        
+        async function handlePlanTrip(destination) {
+            openModal(geminiModal);
+            document.getElementById('gemini-loading').classList.remove('hidden');
+            document.getElementById('gemini-content').classList.add('hidden');
+            document.getElementById('gemini-modal-title').textContent = `Trip Plan: ${destination}`;
+            
+            const systemPrompt = "You are a helpful travel guide. The user has just booked a train to the destination. Provide a concise 2-day, 3-point itinerary for a first-time visitor. Focus on 3-4 key attractions near the main railway station. Format the output as simple HTML with <h2> for Day 1/Day 2, and <ul>/<li> for the itinerary points.";
+            const userQuery = `Create a 2-day itinerary for ${destination}.`;
+            
+            try {
+                const result = await callGeminiAPI(userQuery, systemPrompt, false);
+                document.getElementById('gemini-content').innerHTML = result.text;
+            } catch (error) {
+                console.error("Gemini Error:", error);
+                document.getElementById('gemini-content').innerHTML = `<p class="text-red-600">Sorry, I couldn't generate an itinerary. Please try again later.</p>`;
+            }
+            
+            document.getElementById('gemini-loading').classList.add('hidden');
+            document.getElementById('gemini-content').classList.remove('hidden');
+        }
+
+        async function callGeminiAPI(userQuery, systemPrompt, useGrounding = false, retries = 3, delay = 1000) {
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            if (useGrounding) {
+                payload.tools = [{ "google_search": {} }];
+            }
+
+            try {
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries > 0) {
+                        // Exponential backoff
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiAPI(userQuery, systemPrompt, useGrounding, retries - 1, delay * 2);
+                    }
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundalltributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
+                            .filter(s => s.uri && s.title);
+                    }
+                    return { text, sources };
+                } else {
+                    throw new Error("Invalid response structure from API.");
+                }
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGeminiAPI(userQuery, systemPrompt, useGrounding, retries - 1, delay * 2);
+                }
+                console.error("Gemini API call failed:", error);
+                throw error;
+            }
+        }
+
+    </script>
+
+</body>
+</html>

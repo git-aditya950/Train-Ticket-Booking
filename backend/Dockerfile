@@ -36,12 +36,13 @@ RUN mkdir build && cd build && \
     cmake --build . -j$(nproc)
 
 # Runtime stage
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
     libssl3 \
     ca-certificates \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user

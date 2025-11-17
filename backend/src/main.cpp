@@ -90,7 +90,7 @@ int main() {
         }, true);
     
     // Create server
-    HTTPServer server(18080, "localhost");
+    HTTPServer server(18080, "0.0.0.0");
     server.setRouter(&router);
     serverPtr = &server;
     
@@ -100,7 +100,7 @@ int main() {
     
     // Start server
     std::cout << "\nServer configuration:" << std::endl;
-    std::cout << "  Host: localhost" << std::endl;
+    std::cout << "  Host: 0.0.0.0" << std::endl;
     std::cout << "  Port: 18080" << std::endl;
     std::cout << "  Base URL: http://localhost:18080/api" << std::endl;
     std::cout << "\nAvailable endpoints:" << std::endl;

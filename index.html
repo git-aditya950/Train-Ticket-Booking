@@ -161,13 +161,14 @@
                     </div>
                     
                     <!-- Profile Badge/Button - Show when logged in -->
-                    <div id="profile-menu" class="hidden">
-                        <button id="profile-badge-btn" class="p-2 bg-white border border-gray-300 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 transition focus:outline-none">
-                            <span class="sr-only">Open user menu</span>
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" />
-                            </svg>
-                        </button>
+                    <div id="profile-menu" class="hidden flex items-center space-x-3">
+                            <span id="user-name" class="text-sm font-medium text-gray-700">User</span>
+                            <button id="profile-badge-btn" class="p-2 bg-white border border-gray-300 rounded-full shadow-sm text-gray-600 hover:bg-gray-100 transition focus:outline-none">
+                                <span class="sr-only">Open user menu</span>
+                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18 21.236H6.126c-.638 0-1.155-.499-1.125-1.118Z" />
+                                </svg>
+                            </button>
                     </div>
                 </div>
             </div>
@@ -338,15 +339,15 @@
                         <form id="profile-form" class="space-y-6">
                             <div>
                                 <label for="profile-name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" id="profile-name" value="Demo User" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="text" id="profile-name" value="" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <div>
                                 <label for="profile-email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                                <input type="email" id="profile-email" value="demo@user.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" readonly>
+                                <input type="email" id="profile-email" value="" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" readonly>
                             </div>
                             <div>
                                 <label for="profile-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                <input type="tel" id="profile-phone" value="+91 98765 43210" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <input type="tel" id="profile-phone" value="" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <div>
                                 <label for="profile-password" class="block text-sm font-medium text-gray-700">New Password</label>
@@ -614,15 +615,19 @@
             <form id="register-form" class="space-y-6">
                 <div>
                     <label for="register-name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                    <input type="text" id="register-name" placeholder="John Doe" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="text" id="register-name" placeholder="John Doe" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <div>
                     <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="register-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="email" id="register-email" placeholder="you@example.com" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                </div>
+                <div>
+                    <label for="register-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <input type="tel" id="register-phone" placeholder="+91 98765 43210" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label for="register-password" class="block text-sm font-medium text-gray-700">Password</label>
-                    <input type="password" id="register-password" placeholder="Create a strong password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="password" id="register-password" placeholder="Create a strong password" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                 </div>
                 <button type="submit" class="w-full px-6 py-3 text-base font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
                     Create Account
@@ -634,10 +639,10 @@
     <!-- Gemini API Modal -->
     <div id="gemini-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-xl border border-gray-200 relative">
-            <button id="close-gemini-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button id="close-gemini-modal" class="absolute top-4 right-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition z-10">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <h2 id="gemini-modal-title" class="text-2xl font-bold text-center text-gray-900 mb-6">Trip Planner</h2>
+            <h2 id="gemini-modal-title" class="text-2xl font-bold text-center text-gray-900 mb-6 pr-8">Trip Planner</h2>
             <div id="gemini-loading" class="text-center py-12 hidden">
                 <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -653,8 +658,8 @@
     <div id="sidebar-menu" class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl z-50 transform translate-x-full">
         <div class="flex justify-between items-center p-4 border-b border-gray-200">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">My Account</h2>
-                <p id="sidebar-user-email" class="text-sm text-gray-600">demo@user.com</p>
+                <h2 id="sidebar-user-name" class="text-lg font-semibold text-gray-900">My Account</h2>
+                <p id="sidebar-user-email" class="text-sm text-gray-600"></p>
             </div>
             <button id="close-sidebar-btn" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
                 <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -703,7 +708,7 @@
         };
         
         // --- Gemini API Config (Optional - keep if using AI features) ---
-        const GEMINI_API_KEY = "";
+        const GEMINI_API_KEY = "AIzaSyDIN_KHDrHo6LdMFuhZh2r7p3WxxkxE23w";
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
 
         // --- App State ---
@@ -743,10 +748,12 @@
             
             const data = await response.json();
             
+            // Only throw error if HTTP status is not OK (4xx, 5xx)
             if (!response.ok) {
                 throw new Error(data.message || `HTTP error! status: ${response.status}`);
             }
             
+            // Return the data - let caller handle success/error based on data.status
             return data;
         }
 
@@ -944,10 +951,11 @@
                     // Verify token is still valid by fetching profile
                     try {
                         const response = await apiRequest(API_ENDPOINTS.profile);
-                        if (response.status === 'success' && response.user) {
+                        const userData = response.data?.user || response.data || response.user;
+                        if (response.status === 'success' && userData) {
                             // Update user data in case it changed
-                            saveUserData(response.user);
-                            updateUIForLoggedInUser(response.user);
+                            saveUserData(userData);
+                            updateUIForLoggedInUser(userData);
                         } else {
                             // Token invalid, clear and logout
                             clearAuthToken();
@@ -972,18 +980,50 @@
         }
 
         function updateUIForLoggedInUser(user) {
-            document.getElementById('auth-buttons').classList.add('hidden');
-            document.getElementById('profile-menu').classList.remove('hidden');
+            console.log('Updating UI for logged in user:', user);
+            
+            // Hide auth buttons, show profile menu
+            const authButtons = document.getElementById('auth-buttons');
+            const profileMenu = document.getElementById('profile-menu');
+            
+            console.log('Auth buttons element:', authButtons);
+            console.log('Profile menu element:', profileMenu);
+            
+            // Hide auth buttons
+            authButtons.style.display = 'none';
+            console.log('Auth buttons hidden');
+            
+            // Show profile menu as flex
+            profileMenu.style.display = 'flex';
+            console.log('Profile menu shown');
+            
+            // Set user name
             const displayName = user.name || user.email || "User";
             document.getElementById('user-name').textContent = displayName;
             document.getElementById('sidebar-user-name').textContent = displayName;
+            
+            // Set user email in sidebar
+            const userEmail = user.email || "";
+            document.getElementById('sidebar-user-email').textContent = userEmail;
+            
+            console.log('User name set to:', displayName);
+            console.log('User email set to:', userEmail);
+            
+            // Update profile form fields
+            document.getElementById('profile-name').value = user.name || '';
+            document.getElementById('profile-email').value = user.email || '';
+            document.getElementById('profile-phone').value = user.phone || '';
+            
             // Load bookings
             loadUserBookings();
         }
 
         function updateUIForLoggedOutUser() {
-            document.getElementById('auth-buttons').classList.remove('hidden');
-            document.getElementById('profile-menu').classList.add('hidden');
+            // Show auth buttons
+            document.getElementById('auth-buttons').style.display = 'block';
+            
+            // Hide profile menu
+            document.getElementById('profile-menu').style.display = 'none';
             closeSidebar();
             showPage('page-search'); // Go to home on logout
         }
@@ -1117,27 +1157,45 @@
             e.preventDefault();
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
+            
             try {
                 const response = await apiRequest(API_ENDPOINTS.login, {
                     method: 'POST',
                     body: JSON.stringify({ email, password })
                 });
                 
-                if (response.status === 'success' && response.token && response.user) {
+                console.log('Login response:', response);
+                
+                // Extract user data from response.data or response.data.user
+                const userData = response.data?.user || response.data || response.user;
+                
+                // Check if login was successful
+                if (response.status === 'success' && response.token && userData) {
+                    console.log('Login successful, saving data...');
+                    
                     // Save token and user data
                     saveAuthToken(response.token);
-                    saveUserData(response.user);
+                    saveUserData(userData);
+                    
+                    console.log('Token saved:', localStorage.getItem('authToken'));
+                    console.log('User saved:', localStorage.getItem('currentUser'));
+                    
+                    // Close modal first
+                    closeModal(loginModal);
                     
                     // Update UI
-                    updateUIForLoggedInUser(response.user);
-                    closeModal(loginModal);
+                    updateUIForLoggedInUser(userData);
                     
                     alert('Login successful!');
                 } else {
-                    throw new Error(response.message || 'Login failed');
+                    // Backend returned error status
+                    console.log('Login failed with response:', response);
+                    alert(response.message || 'Login failed. Please check your credentials.');
                 }
             } catch (error) {
-                alert(`Login Failed: ${error.message}`);
+                // Network or HTTP error
+                console.error('Login error:', error);
+                alert(`Login failed: ${error.message}`);
             }
         }
 
@@ -1145,28 +1203,47 @@
             e.preventDefault();
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
+            const phone = document.getElementById('register-phone').value;
             const password = document.getElementById('register-password').value;
+            
             try {
                 const response = await apiRequest(API_ENDPOINTS.register, {
                     method: 'POST',
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ name, email, phone, password })
                 });
                 
-                if (response.status === 'success' && response.token && response.user) {
+                console.log('Register response:', response);
+                
+                // Extract user data from response.data or response.data.user
+                const userData = response.data?.user || response.data || response.user;
+                
+                // Check if registration was successful
+                if (response.status === 'success' && response.token && userData) {
+                    console.log('Registration successful, saving data...');
+                    
                     // Save token and user data
                     saveAuthToken(response.token);
-                    saveUserData(response.user);
+                    saveUserData(userData);
+                    
+                    console.log('Token saved:', localStorage.getItem('authToken'));
+                    console.log('User saved:', localStorage.getItem('currentUser'));
+                    
+                    // Close modal first
+                    closeModal(registerModal);
                     
                     // Update UI
-                    updateUIForLoggedInUser(response.user);
-                    closeModal(registerModal);
+                    updateUIForLoggedInUser(userData);
                     
                     alert('Registration successful!');
                 } else {
-                    throw new Error(response.message || 'Registration failed');
+                    // Backend returned error status
+                    console.log('Registration failed with response:', response);
+                    alert(response.message || 'Registration failed. Please try again.');
                 }
             } catch (error) {
-                alert(`Registration Failed: ${error.message}`);
+                // Network or HTTP error
+                console.error('Registration error:', error);
+                alert(`Registration failed: ${error.message}`);
             }
         }
 
@@ -1446,7 +1523,7 @@
         function handleAddPassenger(e) {
             e.preventDefault();
             const name = document.getElementById('passenger-name').value;
-            const age = document.getElementById('passenger-age').value;
+            const age = parseInt(document.getElementById('passenger-age').value, 10);
             const gender = document.getElementById('passenger-gender').value;
             const berth = document.getElementById('passenger-berth').value;
             
@@ -1556,13 +1633,13 @@
                     body: JSON.stringify(bookingData)
                 });
                 
-                if (response.status !== 'success' || !response.booking) {
+                if (response.status !== 'success' || !response.data) {
                     throw new Error(response.message || 'Booking creation failed');
                 }
                 
                 // Use PNR from backend response
-                const backendPnr = response.booking.pnr || pnr;
-                const bookingId = response.booking.bookingId || response.booking.id;
+                const backendPnr = response.data.pnr || pnr;
+                const bookingId = response.data.bookingId || response.data.id;
 
                 // 2. Update Confirmation Page
                 document.getElementById('confirmation-pnr').textContent = backendPnr;
@@ -1601,9 +1678,9 @@
             try {
                 const response = await apiRequest(API_ENDPOINTS.bookings);
                 
-                if (response.status === 'success' && response.bookings) {
+                if (response.status === 'success' && response.data) {
                     // Sort by booking date, newest first
-                    const bookings = response.bookings.sort((a, b) => {
+                    const bookings = response.data.sort((a, b) => {
                         const dateA = new Date(a.bookingDate || a.createdAt);
                         const dateB = new Date(b.bookingDate || b.createdAt);
                         return dateB - dateA;
@@ -1699,15 +1776,20 @@
                     <p class="mt-3 text-gray-600">Generating ideas...</p>
                 </div>`;
 
-            const systemPrompt = "You are a travel agent specializing in Indian train travel. Suggest 3-5 destinations matching the user's request. For each, provide a brief 1-2 sentence description and mention the main railway station. Format the output as simple HTML with <strong> for station names and <p> for descriptions.";
-            const userQuery = `Suggest train-accessible destinations in India for: "${prompt}"`;
+            const systemPrompt = "You are a travel agent. Suggest exactly 3 Indian destinations. For each: destination name in bold, one short sentence (max 15 words), station name. Keep it brief and use simple HTML.";
+            const userQuery = `Suggest 3 train destinations in India for: "${prompt}"`;
             
             try {
                 const result = await callGeminiAPI(userQuery, systemPrompt, true);
-                resultsContainer.innerHTML = result.text;
+                // Strip markdown code blocks if present
+                let cleanedText = result.text.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+                resultsContainer.innerHTML = cleanedText;
             } catch (error) {
                 console.error("Gemini Error:", error);
-                resultsContainer.innerHTML = `<p class="text-red-600">Sorry, I couldn't get any suggestions. Please try again.</p>`;
+                const errorMessage = error.message.includes("API key") 
+                    ? error.message 
+                    : "Sorry, I couldn't get any suggestions. Please try again.";
+                resultsContainer.innerHTML = `<p class="text-red-600">${errorMessage}</p>`;
             }
         }
         
@@ -1717,15 +1799,20 @@
             document.getElementById('gemini-content').classList.add('hidden');
             document.getElementById('gemini-modal-title').textContent = `Trip Plan: ${destination}`;
             
-            const systemPrompt = "You are a helpful travel guide. The user has just booked a train to the destination. Provide a concise 2-day, 3-point itinerary for a first-time visitor. Focus on 3-4 key attractions near the main railway station. Format the output as simple HTML with <h2> for Day 1/Day 2, and <ul>/<li> for the itinerary points.";
-            const userQuery = `Create a 2-day itinerary for ${destination}.`;
+            const systemPrompt = "Create a brief 1-day itinerary with exactly 3 must-visit places. Each place: name and 1 short sentence only. Use simple HTML: <h3> for day heading, <ul><li> for places. Keep it under 100 words total.";
+            const userQuery = `Brief 1-day plan for ${destination}.`;
             
             try {
                 const result = await callGeminiAPI(userQuery, systemPrompt, false);
-                document.getElementById('gemini-content').innerHTML = result.text;
+                // Strip markdown code blocks if present
+                let cleanedText = result.text.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+                document.getElementById('gemini-content').innerHTML = cleanedText;
             } catch (error) {
                 console.error("Gemini Error:", error);
-                document.getElementById('gemini-content').innerHTML = `<p class="text-red-600">Sorry, I couldn't generate an itinerary. Please try again later.</p>`;
+                const errorMessage = error.message.includes("API key") 
+                    ? error.message 
+                    : "Sorry, I couldn't generate an itinerary. Please try again later.";
+                document.getElementById('gemini-content').innerHTML = `<p class="text-red-600">${errorMessage}</p>`;
             }
             
             document.getElementById('gemini-loading').classList.add('hidden');
@@ -1733,6 +1820,11 @@
         }
 
         async function callGeminiAPI(userQuery, systemPrompt, useGrounding = false, retries = 3, delay = 1000) {
+            // Check if API key is configured
+            if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
+                throw new Error("Gemini API key is not configured. Please add your API key to use this feature.");
+            }
+            
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
                 systemInstruction: {
@@ -1767,7 +1859,7 @@
                     const text = candidate.content.parts[0].text;
                     let sources = [];
                     const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundalltributions) {
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
                         sources = groundingMetadata.groundingAttributions
                             .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
                             .filter(s => s.uri && s.title);

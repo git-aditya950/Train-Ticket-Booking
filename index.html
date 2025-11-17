@@ -683,56 +683,33 @@
     <!-- 4. All JavaScript -->
     <script type="module">
         // =================================================================================
-        // 1. FIREBASE & GEMINI SDK IMPORTS
+        // 1. CONFIGURATION
         // =================================================================================
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
-            onAuthStateChanged, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut,
-            updateProfile
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            getDoc, 
-            addDoc, 
-            setDoc, 
-            updateDoc, 
-            deleteDoc, 
-            onSnapshot, 
-            collection, 
-            query, 
-            where, 
-            getDocs,
-            setLogLevel
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Firebase removed - using C++ backend
 
-        // =================================================================================
-        // 2. CONFIGURATION & APP STATE
-        // =================================================================================
-
-        // --- Firebase Config ---
-        // !! FIX: Check if variables exist. If not, create an empty config. !!
-        const firebaseConfig = JSON.parse(
-            typeof __firebase_config !== 'undefined' ? __firebase_config : '{"apiKey": "YOUR_API_KEY", "authDomain": "YOUR_AUTH_DOMAIN", "projectId": "YOUR_PROJECT_ID"}'
-        );
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- Backend API Configuration ---
+        const API_BASE_URL = "http://localhost:18080/api";
+        const API_ENDPOINTS = {
+            // Auth endpoints
+            register: `${API_BASE_URL}/auth/register`,
+            login: `${API_BASE_URL}/auth/login`,
+            logout: `${API_BASE_URL}/auth/logout`,
+            profile: `${API_BASE_URL}/auth/profile`,
+            updateProfile: `${API_BASE_URL}/auth/profile`,
+            // Train endpoints
+            search: `${API_BASE_URL}/search`,
+            // Booking endpoints
+            bookings: `${API_BASE_URL}/bookings`
+        };
         
-        // --- Gemini API Config ---
-        const GEMINI_API_KEY = ""; // Kept as empty string per instructions
+        // --- Gemini API Config (Optional - keep if using AI features) ---
+        const GEMINI_API_KEY = "";
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
-        const CXX_BACKEND_URL = "http://localhost:18080/api/search";
 
         // --- App State ---
-        let db = null;
-        let auth = null;
+        let currentUser = null;  // Stores logged-in user data
+        let authToken = null;    // JWT token
         let userId = null;
-        let unsubscribeBookings = null;
         let currentBooking = {
             train: null,
             passengers: [],
@@ -1066,8 +1043,24 @@
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-                closeModal(loginModal);
+                const response = await apiRequest(API_ENDPOINTS.login, {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.status === 'success' && response.token && response.user) {
+                    // Save token and user data
+                    saveAuthToken(response.token);
+                    saveUserData(response.user);
+                    
+                    // Update UI
+                    updateUIForLoggedInUser(response.user);
+                    closeModal(loginModal);
+                    
+                    alert('Login successful!');
+                } else {
+                    throw new Error(response.message || 'Login failed');
+                }
             } catch (error) {
                 alert(`Login Failed: ${error.message}`);
             }
@@ -1079,9 +1072,24 @@
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await updateProfile(userCredential.user, { displayName: name });
-                closeModal(registerModal);
+                const response = await apiRequest(API_ENDPOINTS.register, {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                if (response.status === 'success' && response.token && response.user) {
+                    // Save token and user data
+                    saveAuthToken(response.token);
+                    saveUserData(response.user);
+                    
+                    // Update UI
+                    updateUIForLoggedInUser(response.user);
+                    closeModal(registerModal);
+                    
+                    alert('Registration successful!');
+                } else {
+                    throw new Error(response.message || 'Registration failed');
+                }
             } catch (error) {
                 alert(`Registration Failed: ${error.message}`);
             }
@@ -1089,9 +1097,26 @@
 
         async function handleLogout() {
             try {
-                await signOut(auth);
-                await signInAnonymously(auth); // Sign back in anonymously
+                // Call backend logout endpoint (optional, depends on backend implementation)
+                if (authToken) {
+                    try {
+                        await apiRequest(API_ENDPOINTS.logout, {
+                            method: 'POST'
+                        });
+                    } catch (error) {
+                        console.warn('Logout API call failed:', error);
+                    }
+                }
+                
+                // Clear local data
+                clearAuthToken();
+                clearUserData();
+                
+                // Update UI
                 updateUIForLoggedOutUser();
+                showPage('page-search');
+                
+                alert('Logged out successfully!');
             } catch (error) {
                 console.error("Logout Failed:", error);
             }
@@ -1099,12 +1124,43 @@
         
         async function handleProfileUpdate(e) {
             e.preventDefault();
-            alert("Profile update is not implemented in this demo.");
-            // To implement:
-            // 1. Get new name, phone (if changed)
-            // 2. await updateProfile(auth.currentUser, { displayName: newName });
-            // 3. If password, await updatePassword(auth.currentUser, newPassword);
-            // 4. If phone, await updatePhoneNumber(...)
+            
+            if (!userId || !authToken) {
+                alert('Please log in to update your profile.');
+                return;
+            }
+            
+            const name = document.getElementById('profile-name').value;
+            const phone = document.getElementById('profile-phone').value;
+            const password = document.getElementById('profile-password').value;
+            
+            try {
+                const updateData = { name, phone };
+                if (password) {
+                    updateData.password = password;
+                }
+                
+                const response = await apiRequest(API_ENDPOINTS.updateProfile, {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (response.status === 'success' && response.user) {
+                    // Update stored user data
+                    saveUserData(response.user);
+                    
+                    // Update UI
+                    const displayName = response.user.name || response.user.email || "User";
+                    document.getElementById('user-name').textContent = displayName;
+                    document.getElementById('sidebar-user-name').textContent = displayName;
+                    
+                    alert('Profile updated successfully!');
+                } else {
+                    throw new Error(response.message || 'Profile update failed');
+                }
+            } catch (error) {
+                alert(`Profile Update Failed: ${error.message}`);
+            }
         }
 
         // =================================================================================
@@ -1154,6 +1210,7 @@
             // GET THE VALUES from the search form
             const fromValue = document.getElementById('from-station').value || 'New Delhi (NDLS)';
             const toValue = document.getElementById('to-station').value || 'Mumbai (CST)';
+            const dateValue = document.getElementById('journey-date').value;
 
             const resultsContainer = document.getElementById('search-results-container');
             resultsContainer.innerHTML = `
@@ -1167,24 +1224,27 @@
 
             let trainData = [];
             try {
-                // UPDATE: Build the URL with query parameters
-                const url = `${CXX_BACKEND_URL}?from=${encodeURIComponent(fromValue)}&to=${encodeURIComponent(toValue)}`;
+                // Build the URL with query parameters
+                let url = `${API_ENDPOINTS.search}?from=${encodeURIComponent(fromValue)}&to=${encodeURIComponent(toValue)}`;
+                if (dateValue) {
+                    url += `&date=${encodeURIComponent(dateValue)}`;
+                }
 
                 // Try fetching from C++ backend
-                const response = await fetch(url); // Use the new URL
+                const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`C++ backend error: ${response.statusText}`);
+                    throw new Error(`Backend error: ${response.statusText}`);
                 }
                 const data = await response.json();
                 if (data.status === 'success' && data.trains) {
                     trainData = data.trains;
                 } else {
-                    throw new Error('Invalid data from C++ backend');
+                    throw new Error('Invalid data from backend');
                 }
             } catch (error) {
-                console.warn(`Could not fetch from C++ backend (${error.message}). Using local mock data.`);
+                console.warn(`Could not fetch from backend (${error.message}). Using local mock data.`);
                 
-                // UPDATE: Use the new helper function with the search values
+                // Fallback to mock data
                 trainData = getRandomTrainsFromMock(fromValue, toValue);
             }
             
@@ -1407,25 +1467,30 @@
             currentBooking.journeyDate = dateInput.value; // Save the journey date
             
             try {
-                // !! FIX: Check if db is available before trying to save !!
-                if (!db) {
-                    console.warn("Database not initialized. Simulating booking save.");
-                    // Simulate a successful booking without saving
-                } else {
-                    // Save to Firestore
-                    const bookingCollectionPath = `artifacts/${appId}/users/${userId}/bookings`;
-                    // Add selectedClass to the booking data
-                    await addDoc(collection(db, bookingCollectionPath), {
-                        ...currentBooking,
-                        pnr: pnr,
-                        bookingDate: new Date().toISOString(),
-                        status: "Confirmed",
-                        userId: userId // Ensure userId is saved
-                    });
+                // Save to backend
+                const bookingData = {
+                    train: currentBooking.train,
+                    selectedClass: currentBooking.selectedClass,
+                    journeyDate: currentBooking.journeyDate,
+                    passengers: currentBooking.passengers,
+                    totalFare: currentBooking.totalFare
+                };
+                
+                const response = await apiRequest(API_ENDPOINTS.bookings, {
+                    method: 'POST',
+                    body: JSON.stringify(bookingData)
+                });
+                
+                if (response.status !== 'success' || !response.booking) {
+                    throw new Error(response.message || 'Booking creation failed');
                 }
+                
+                // Use PNR from backend response
+                const backendPnr = response.booking.pnr || pnr;
+                const bookingId = response.booking.bookingId || response.booking.id;
 
                 // 2. Update Confirmation Page
-                document.getElementById('confirmation-pnr').textContent = pnr;
+                document.getElementById('confirmation-pnr').textContent = backendPnr;
                 document.getElementById('confirmation-journey-summary').innerHTML = `
                     <p class="font-semibold text-gray-800">${currentBooking.train.trainName} (${currentBooking.train.trainNumber})</p>
                     <p class="text-sm text-gray-600">${currentBooking.train.from} &rarr; ${currentBooking.train.to}</p>
@@ -1452,33 +1517,30 @@
         // 9. "MY BOOKINGS" PAGE
         // =================================================================================
 
-        function attachBookingsListener(uid) {
-            if (unsubscribeBookings) {
-                unsubscribeBookings(); // Detach old listener if exists
-            }
-            
-            // !! FIX: Check if db is available before listening !!
-            if (!db) {
-                console.warn("Database not initialized. Cannot listen for bookings.");
-                displayUserBookings([]); // Display empty bookings
+        async function loadUserBookings() {
+            if (!userId || !authToken) {
+                displayUserBookings([]);
                 return;
             }
-
-            const bookingCollectionPath = `artifacts/${appId}/users/${uid}/bookings`;
-            const q = query(collection(db, bookingCollectionPath));
             
-            unsubscribeBookings = onSnapshot(q, (snapshot) => {
-                const bookings = [];
-                snapshot.forEach((doc) => {
-                    bookings.push({ id: doc.id, ...doc.data() });
-                });
-                // Sort by booking date, newest first
-                bookings.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
-                displayUserBookings(bookings);
-            }, (error) => {
-                console.error("Error listening to bookings: ", error);
-                alert("Could not load your bookings.");
-            });
+            try {
+                const response = await apiRequest(API_ENDPOINTS.bookings);
+                
+                if (response.status === 'success' && response.bookings) {
+                    // Sort by booking date, newest first
+                    const bookings = response.bookings.sort((a, b) => {
+                        const dateA = new Date(a.bookingDate || a.createdAt);
+                        const dateB = new Date(b.bookingDate || b.createdAt);
+                        return dateB - dateA;
+                    });
+                    displayUserBookings(bookings);
+                } else {
+                    displayUserBookings([]);
+                }
+            } catch (error) {
+                console.error("Error loading bookings:", error);
+                displayUserBookings([]);
+            }
         }
         
         function displayUserBookings(bookings) {

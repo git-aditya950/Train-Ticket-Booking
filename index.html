@@ -717,6 +717,98 @@
             totalFare: 0
         };
 
+        // =================================================================================
+        // 2. API HELPER FUNCTIONS
+        // =================================================================================
+
+        /**
+         * Makes an authenticated API request
+         */
+        async function apiRequest(url, options = {}) {
+            // Add default headers
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            // Add auth token if available
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            }
+            
+            return data;
+        }
+
+        /**
+         * Stores authentication token in localStorage
+         */
+        function saveAuthToken(token) {
+            authToken = token;
+            localStorage.setItem('authToken', token);
+        }
+
+        /**
+         * Loads authentication token from localStorage
+         */
+        function loadAuthToken() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                authToken = token;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Clears authentication token
+         */
+        function clearAuthToken() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+        }
+
+        /**
+         * Stores user data in localStorage
+         */
+        function saveUserData(user) {
+            currentUser = user;
+            userId = user.id || user.userId;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+
+        /**
+         * Loads user data from localStorage
+         */
+        function loadUserData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                currentUser = JSON.parse(userData);
+                userId = currentUser.id || currentUser.userId;
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Clears user data
+         */
+        function clearUserData() {
+            currentUser = null;
+            userId = null;
+            localStorage.removeItem('currentUser');
+        }
+
         // --- Mock Train Data (for local fallback) ---
         const masterTrainList = [
             { "trainNumber": "12001", "trainName": "Shatabdi Express", "from": "New Delhi (NDLS)", "to": "Bhopal (BPL)", "departureTime": "06:00", "arrivalTime": "14:05", "duration": "8h 5m", "availability": [ {"class": "CC", "status": "AVL 50", "price": 1800}, {"class": "EC", "status": "AVL 10", "price": 3200} ] },
@@ -844,71 +936,54 @@
 
         async function initializeAppCore() {
             try {
-                // !! FIX: Check if the config is just a placeholder !!
-                if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-                    console.warn("Firebase config is missing or is a placeholder. App will run in anonymous mode without a database.");
-                    // Initialize a MOCK app just to let the code run
-                    initializeApp({ apiKey: "mock", authDomain: "mock.firebaseapp.com", projectId: "mock" });
-                    auth = getAuth();
-                    await signInAnonymously(auth); // Sign in anonymously
-                    
-                    // Set db to null so we don't try to use it
-                    db = null; 
-                    console.warn("Database (db) is null. Bookings will not be saved.");
-                    showAppInitializationError("App is in offline mode. Bookings will not be saved.");
-
-                } else {
-                    // Config IS present, initialize Firebase normally
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    setLogLevel('Debug'); // Enable Firestore logging
-
-                    // Sign in with token if available, otherwise anonymously
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                }
-
-                // Auth state listener
-                onAuthStateChanged(auth, (user) => {
-                    if (user && !user.isAnonymous) {
-                        // User is signed in
-                        userId = user.uid;
-                        updateUIForLoggedInUser(user);
-                        attachBookingsListener(user.uid);
-                    } else {
-                        // User is anonymous or logged out
-                        userId = null;
+                // Check if user is already logged in
+                const hasToken = loadAuthToken();
+                const hasUser = loadUserData();
+                
+                if (hasToken && hasUser) {
+                    // Verify token is still valid by fetching profile
+                    try {
+                        const response = await apiRequest(API_ENDPOINTS.profile);
+                        if (response.status === 'success' && response.user) {
+                            // Update user data in case it changed
+                            saveUserData(response.user);
+                            updateUIForLoggedInUser(response.user);
+                        } else {
+                            // Token invalid, clear and logout
+                            clearAuthToken();
+                            clearUserData();
+                            updateUIForLoggedOutUser();
+                        }
+                    } catch (error) {
+                        console.warn('Token validation failed:', error);
+                        // Token expired or invalid
+                        clearAuthToken();
+                        clearUserData();
                         updateUIForLoggedOutUser();
-                        if (unsubscribeBookings) unsubscribeBookings();
-                        displayUserBookings([]); // Clear bookings
                     }
-                });
-
+                } else {
+                    // No token or user data
+                    updateUIForLoggedOutUser();
+                }
             } catch (error) {
-                console.error("Critical Error initializing app:", error);
-                showAppInitializationError("Could not initialize the application. Please Refresh.");
+                console.error("App initialization failed:", error);
+                updateUIForLoggedOutUser();
             }
         }
 
         function updateUIForLoggedInUser(user) {
             document.getElementById('auth-buttons').classList.add('hidden');
             document.getElementById('profile-menu').classList.remove('hidden');
-            document.getElementById('sidebar-user-email').textContent = user.email || 'Welcome!';
-            
-            // Pre-fill profile page
-            document.getElementById('profile-email').value = user.email || '';
-            document.getElementById('profile-name').value = user.displayName || '';
-            // Note: Phone number isn't a default field, would need separate logic
+            const displayName = user.name || user.email || "User";
+            document.getElementById('user-name').textContent = displayName;
+            document.getElementById('sidebar-user-name').textContent = displayName;
+            // Load bookings
+            loadUserBookings();
         }
 
         function updateUIForLoggedOutUser() {
             document.getElementById('auth-buttons').classList.remove('hidden');
             document.getElementById('profile-menu').classList.add('hidden');
-            document.getElementById('sidebar-user-email').textContent = 'Not logged in';
             closeSidebar();
             showPage('page-search'); // Go to home on logout
         }

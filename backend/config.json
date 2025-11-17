@@ -1,0 +1,19 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 18080
+  },
+  "storage": {
+    "persistToFile": false,
+    "dataDirectory": "./data"
+  },
+  "security": {
+    "jwtSecret": "your-secret-key-change-in-production",
+    "tokenExpiry": 86400,
+    "bcryptRounds": 10
+  },
+  "cors": {
+    "enabled": true,
+    "allowOrigin": "*"
+  }
+}

@@ -1,0 +1,50 @@
+# Build artifacts
+build/
+*.exe
+*.obj
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+
+# IDE and editor files
+.vscode/
+.vs/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Test files
+test/
+tests/
+*_test.*
+
+# Data directory (will be mounted as volume)
+data/
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Package manager
+node_modules/
+package-lock.json
